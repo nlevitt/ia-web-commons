@@ -59,13 +59,13 @@ public class URLParserTest extends TestCase {
 				"http://www.archive.org", "");
 		checkParse("http://www.archive.org?",
 				"http", null, null, "www.archive.org", -1, "", "", null,
-				"http://www.archive.org/?", "/?");
+				"http://www.archive.org?", "?");
 		checkParse("http://www.archive.org#",
 				"http", null, null, "www.archive.org", -1, "", null, "",
-				"http://www.archive.org/#", "/");
+				"http://www.archive.org#", "");
 		checkParse("http://www.archive.org#foo#bar#baz",
 				"http", null, null, "www.archive.org", -1, "", null, "foo#bar#baz",
-				"http://www.archive.org/#foo#bar#baz", "/");
+				"http://www.archive.org#foo#bar#baz", "");
 		checkParse("http://www.archive.org:8080/index.html?query#foo",
 				"http", null, null, "www.archive.org", 8080, "/index.html", "query", "foo",
 				"http://www.archive.org:8080/index.html?query#foo", "/index.html?query");
@@ -74,10 +74,10 @@ public class URLParserTest extends TestCase {
 				"http://www.archive.org:8080/index.html?#foo", "/index.html?");
 		checkParse("http://www.archive.org:8080?#foo",
 				"http", null, null, "www.archive.org", 8080, "", "", "foo",
-				"http://www.archive.org:8080/?#foo", "/?");
+				"http://www.archive.org:8080?#foo", "?");
 		checkParse("http://bücher.ch:8080?#foo",
 				"http", null, null, "bücher.ch", 8080, "", "", "foo",
-				"http://bücher.ch:8080/?#foo", "/?");
+				"http://bücher.ch:8080?#foo", "?");
 
 		checkParse("dns:bücher.ch",
 				"dns", null, null, null, -1, "bücher.ch", null, null,
@@ -137,9 +137,12 @@ public class URLParserTest extends TestCase {
 		checkParse("/index.html?query#foo",
 				null, null, null, null, -1, "/index.html", "query", "foo",
 				"/index.html?query#foo", "/index.html?query");
-		checkParse("index.html?query#foo",
-				null, null, null, null, -1, "index.html", "query", "foo",
-				"index.html?query#foo", "index.html?query");
+		checkParse("?query#foo",
+				null, null, null, null, -1, "", "query", "foo",
+				"?query#foo", "?query");
+		checkParse("#foo",
+				null, null, null, null, -1, "", null, "foo",
+				"#foo", "");
 		checkParse("funky.path.not.hostname.com///slashes//index.html?query#foo",
 				null, null, null, null, -1, "funky.path.not.hostname.com///slashes//index.html", "query", "foo",
 				"funky.path.not.hostname.com///slashes//index.html?query#foo", "funky.path.not.hostname.com///slashes//index.html?query");
@@ -149,5 +152,8 @@ public class URLParserTest extends TestCase {
 		checkParse("bitcoin:blahblah?amount=123", 
 				"bitcoin", null, null, null, -1, "blahblah", "amount=123", null, 
 				"bitcoin:blahblah?amount=123", "blahblah?amount=123");
+		checkParse("urn:uuid:e14814d9-33fe-437b-8c61-012345d74d9a", 
+				"urn", null, null, null, -1, "uuid:e14814d9-33fe-437b-8c61-012345d74d9a", null, null, 
+				"urn:uuid:e14814d9-33fe-437b-8c61-012345d74d9a", "uuid:e14814d9-33fe-437b-8c61-012345d74d9a");
 	}
 }

@@ -89,14 +89,8 @@ public class HandyURL {
 		if(host != null && surt) {
 			sb.append(")");
 		}
-		boolean hasPath = (path != null) && (path.length() > 0);
-		if(hasPath) {
+		if(path != null) {
 			sb.append(path);
-		} else {
-			if((query != null) || (fragment != null)) {
-				// must have '/' with query or hash: (XXX says what?)
-				sb.append("/");
-			}
 		}
 		if(query != null) {
 			sb.append('?').append(query);
@@ -114,14 +108,8 @@ public class HandyURL {
 
 	public String getPathQuery() {
 		StringBuilder sb = new StringBuilder();
-		boolean hasPath = (path != null) && (path.length() > 0);
-		if(hasPath) {
+		if(path != null) {
 			sb.append(path);
-		} else {
-			if((query != null) || (fragment != null)) {
-				// must have '/' with query or hash: (XXX says what?)
-				sb.append("/");
-			}
 		}
 		if(query != null) {
 			sb.append('?').append(query);
