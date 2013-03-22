@@ -13,18 +13,13 @@ public class URLRegexTransformer {
     	new OptimizedPattern("(?i)^.*/(\\([0-9a-z]{24}\\)/)(?:[^\\?]+\\.aspx.*)$", ".aspx", 1, 1),
     };    
     
-    
     private static final OptimizedPattern QUERY_OPTS[] = {
-
     	new OptimizedPattern("(?i)^(.+)(?:jsessionid=[0-9a-zA-Z]{32})(?:&(.*))?$", "jsessionid=", 1, 2),
     	new OptimizedPattern("(?i)^(.+)(?:phpsessid=[0-9a-zA-Z]{32})(?:&(.*))?$", "phpsessid=", 1, 2),
     	new OptimizedPattern("(?i)^(.+)(?:sid=[0-9a-zA-Z]{32})(?:&(.*))?$", "sid=", 1, 2),
     	new OptimizedPattern("(?i)^(.+)(?:ASPSESSIONID[a-zA-Z]{8}=[a-zA-Z]{24})(?:&(.*))?$", "aspsessionid", 1, 2),
     	new OptimizedPattern("(?i)^(.+)(?:cfid=[^&]+&cftoken=[^&]+)(?:&(.*))?$", "cftoken=", 1, 2),
     };
-
-
-
 
     public static String stripOpts(String orig, OptimizedPattern op[]) {
     	String origLC = orig.toLowerCase();
@@ -117,17 +112,20 @@ public class URLRegexTransformer {
 		return host.substring(idx+1);
 	}
 	
+	private static Pattern dottedQuadOrIpv6 = Pattern.compile(
+			"[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}|\\[^]]*\\]");
 	public static String hostToSURT(String host) {
-		// TODO: ensure we DONT reverse IP addresses!
+		if (dottedQuadOrIpv6.matcher(host).matches()) {
+			return host;
+		}
 		String parts[] = host.split("\\.",-1);
 		if(parts.length == 1) {
 			return host;
 		}
 		StringBuilder sb = new StringBuilder(host.length());
-		for(int i = parts.length - 1; i > 0; i--) {
+		for(int i = parts.length - 1; i >= 0; i--) {
 			sb.append(parts[i]).append(",");
 		}
-		sb.append(parts[0]);
 		return sb.toString();
 	}
 	

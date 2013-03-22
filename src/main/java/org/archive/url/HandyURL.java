@@ -37,7 +37,7 @@ public class HandyURL {
 			int port,
 			String path,
 			String query,
-			String hash) {
+			String fragment) {
 		this.scheme = scheme;
 		this.authUser = authUser;
 		this.authPass = authPass;
@@ -45,7 +45,7 @@ public class HandyURL {
 		this.port = port;
 		this.path = path;
 		this.query = query;
-		this.fragment = hash;
+		this.fragment = fragment;
 	}
 
 	public String getSURTString(boolean includeScheme) {
@@ -85,6 +85,13 @@ public class HandyURL {
 		}
 		if(port != DEFAULT_PORT) {
 			sb.append(":").append(port);
+		}
+		if (surt && authUser != null) {
+			// see org.archive.util.SURT.fromURI(String, boolean)
+			sb.append('@').append(authUser);
+			if(authPass != null) {
+				sb.append(":").append(authPass);
+			}
 		}
 		if(host != null && surt) {
 			sb.append(")");
@@ -298,7 +305,7 @@ public class HandyURL {
 	}
 
 	public String toDebugString() {
-		return String.format("Scheme(%s) UserName(%s) UserPass(%s) Host(%s) port(%d) Path(%s) Query(%s) Frag(%s)",
+		return String.format("Scheme(%s) AuthUser(%s) AuthPass(%s) Host(%s) Port(%d) Path(%s) Query(%s) Frag(%s)",
 				scheme, authUser, authPass, host, port, path, query, fragment);
 	}
 
