@@ -81,7 +81,7 @@ public class URLParser {
     
     // see RFC3986
     final public static Pattern URI_AUTHORITY_REGEX = Pattern.compile(
-    		"^(([^:@]*)(:([^@]*))?@)?(([^:/#?]*)|(\\[[^/#?]*\\]))(:([0-9]+)?)?$");
+            "^(([^:@]*)(:([^@]*))?@)?(([^:/#?]*)|(\\[[^/#?]*\\]))(:([0-9]+)?)?$");
     //        12       3 4           56          7               8 9
     // 1: user:pass@
     // 2: user
@@ -114,11 +114,6 @@ public class URLParser {
 	 * WARC header record.
 	 */
 	public final static String WARCINFO_SCHEME = "warcinfo:";
-	
-	/**
-	 * Default scheme to assume if unspecified. No context implied...
-	 */
-	public final static String DEFAULT_SCHEME = "http://";	
 	
 	/**
 	 * go brewster
@@ -184,31 +179,43 @@ public class URLParser {
 			return null;
 		} else if (hasScheme(urlString)) {
 			return urlString;
+		} else if (urlString.startsWith("//")) {
+			return "http:" + urlString;
 		} else {
-			// add http:// if no scheme is present:
-			return DEFAULT_SCHEME + urlString;
+			return "http://" + urlString; 
 		}
 	}
 	
     public static HandyURL parse(String urlString) throws URISyntaxException {
     	return SELF.parseUrl(urlString);
     }
+
+    /**
+     * @param allowRelative if false, will prepend a default scheme to a url string without one
+     */
+	public static HandyURL parse(String urlString, boolean allowRelative)
+			throws URISyntaxException {
+		return SELF.parseUrl(urlString, allowRelative);
+	}
     
     protected static final URLParser SELF = new URLParser();
 	
     protected HandyURL parseUrl(String urlString) throws URISyntaxException {
+    	return parseUrl(urlString, false);
+    }
+    
+    protected HandyURL parseUrl(String urlString, boolean allowRelative) throws URISyntaxException {
     	// first strip leading or trailing spaces:
     	// TODO: this strips too much - stripping non-printables
     	urlString = trim(urlString);
     	
     	// then remove leading, trailing, and internal TAB, CR, LF:
     	urlString = urlString.replaceAll(STRAY_SPACING,"");
-    	
-    	// replace leading http:/// with http://
-        Matcher m1 = HTTP_SCHEME_SLASHES.matcher(urlString);
-        if (m1.matches()) {
-        	urlString = m1.group(1) + m1.group(2);
-        }
+
+    	if (!allowRelative) {
+    		// add http:// if no scheme is present..
+    		urlString = addDefaultSchemeIfNeeded(urlString);
+    	}
 
         // cross fingers, toes, eyes...
     	Matcher matcher = RFC2396REGEX.matcher(urlString);
