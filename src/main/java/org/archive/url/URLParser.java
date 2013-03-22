@@ -79,9 +79,6 @@ public class URLParser {
     // 9: #fragment
     // A: fragment
     
-    public static final String COMMERCIAL_AT = "@";
-    public static final char PERCENT_SIGN = '%';
-    public static final char COLON = ':';
     public static final String STRAY_SPACING = "[\n\r\t\\p{Zl}\\p{Zp}\u0085]+";
     
     /**
@@ -115,7 +112,7 @@ public class URLParser {
 	public final static String WAIS_SCHEME = "wais://";
 	
 	public static final Pattern SCHEME_PATTERN =
-			Pattern.compile("^([a-zA-Z0-9+.-]+):.*");
+			Pattern.compile("(?s)^([a-zA-Z0-9+.-]+):.*");
 	
 	/**
 	 * Pattern for trimming off the same as {@link String#trim()}, and also nbsp
@@ -203,9 +200,6 @@ public class URLParser {
     		return h;
     	}
     	
-    	// add http:// if no scheme is present..
-    	urlString = addDefaultSchemeIfNeeded(urlString);
-    	
     	// replace leading http:/// with http://
         Matcher m1 = HTTP_SCHEME_SLASHES.matcher(urlString);
         if (m1.matches()) {
@@ -229,50 +223,56 @@ public class URLParser {
         String userPass = null;
         String hostname = null;
         int port = HandyURL.DEFAULT_PORT;
-        
-        String userInfo = null;
-        String colonPort = null;
 
-        int atIndex = uriAuthority.indexOf(COMMERCIAL_AT);
-        int portColonIndex = uriAuthority.indexOf(COLON,(atIndex<0)?0:atIndex);
+        if (uriAuthority != null) {
+        	String userInfo = null;
+        	String colonPort = null;
 
-        if(atIndex<0 && portColonIndex<0) {
-            // most common case: neither userinfo nor port
-        	hostname = uriAuthority;
-        } else if (atIndex<0 && portColonIndex>-1) {
-            // next most common: port but no userinfo
-            hostname = uriAuthority.substring(0,portColonIndex);
-            colonPort = uriAuthority.substring(portColonIndex);
-        } else if (atIndex>-1 && portColonIndex<0) {
-            // uncommon: userinfo, no port
-            userInfo = uriAuthority.substring(0,atIndex);
-            hostname = uriAuthority.substring(atIndex+1);
-        } else {
-            // uncommon: userinfo, port
-            userInfo = uriAuthority.substring(0,atIndex);
-            hostname = uriAuthority.substring(atIndex+1,portColonIndex);
-            colonPort = uriAuthority.substring(portColonIndex);
-        }
-        if(colonPort != null) {
-        	if(colonPort.startsWith(":")) {
-        		try {
-        			port = Integer.parseInt(colonPort.substring(1));
-        		} catch(NumberFormatException e) {
-					throw new URISyntaxException(urlString, "bad port "
-							+ colonPort.substring(1));
-				}
+        	int atIndex = uriAuthority.indexOf('@');
+        	int portColonIndex = uriAuthority.indexOf(':',(atIndex<0)?0:atIndex);
+
+
+        	if(atIndex<0 && portColonIndex<0) {
+        		// most common case: neither userinfo nor port
+        		hostname = uriAuthority;
+        	} else if (atIndex<0 && portColonIndex>-1) {
+        		// next most common: port but no userinfo
+        		hostname = uriAuthority.substring(0,portColonIndex);
+        		colonPort = uriAuthority.substring(portColonIndex);
+        	} else if (atIndex>-1 && portColonIndex<0) {
+        		// uncommon: userinfo, no port
+        		userInfo = uriAuthority.substring(0,atIndex);
+        		hostname = uriAuthority.substring(atIndex+1);
         	} else {
-        		// XXX: what's happened?!
+        		// uncommon: userinfo, port
+        		userInfo = uriAuthority.substring(0,atIndex);
+        		hostname = uriAuthority.substring(atIndex+1,portColonIndex);
+        		colonPort = uriAuthority.substring(portColonIndex);
         	}
-        }
-        if(userInfo != null) {
-        	int passColonIndex = userInfo.indexOf(COLON);
-        	if(passColonIndex == -1) {
-        		// no password:
-        		userName = userInfo;
-        	} else {
-                userName = userInfo.substring(0, passColonIndex);
-                userPass = userInfo.substring(passColonIndex + 1);
+        	if(colonPort != null) {
+        		if(colonPort.startsWith(":")) {
+        			try {
+        				port = Integer.parseInt(colonPort.substring(1));
+        			} catch(NumberFormatException e) {
+        				throw new URISyntaxException(urlString, "bad port "
+        						+ colonPort.substring(1));
+        			}
+        		} else {
+        			// uncommon: userinfo, port
+        			userInfo = uriAuthority.substring(0,atIndex+1);
+        			hostname = uriAuthority.substring(atIndex+1,portColonIndex);
+        			colonPort = uriAuthority.substring(portColonIndex);
+        		}
+        	}
+        	if(userInfo != null) {
+        		int passColonIndex = userInfo.indexOf(':');
+        		if(passColonIndex == -1) {
+        			// no password:
+        			userName = userInfo;
+        		} else {
+        			userName = userInfo.substring(0, passColonIndex);
+        			userPass = userInfo.substring(passColonIndex + 1);
+        		}
         	}
         }
         return makeOne(uriScheme,userName,userPass,hostname,

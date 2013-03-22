@@ -29,7 +29,7 @@ import com.google.common.net.InetAddresses;
  * wouldn't be possible, even if deemed preferable. Instead
  * BasicURLCanonicalizer expresses non-ascii characters pct-encoded UTF-8.
  */
-public class BasicURLCanonicalizer implements URLCanonicalizer {
+public class BasicURLCanonicalizer extends URLCanonicalizer {
 	Pattern OCTAL_IP = Pattern
 			.compile("^(0[0-7]*)(\\.[0-7]+)?(\\.[0-7]+)?(\\.[0-7]+)?$");
 	Pattern DECIMAL_IP = Pattern

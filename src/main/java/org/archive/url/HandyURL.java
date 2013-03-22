@@ -61,30 +61,37 @@ public class HandyURL {
 		StringBuilder sb = new StringBuilder();
 
 		if(includeScheme) {
-			sb.append(scheme).append("://");
-			if (surt) {
-				sb.append("(");
+			if (scheme != null) {
+				sb.append(scheme).append(':');
+			}
+			if (host != null) {
+				sb.append("//");
+				if (surt) {
+					sb.append("(");
+				}
 			}
 		}
-		if(authUser != null) {
+		if(!surt && authUser != null) {
 			sb.append(authUser);
 			if(authPass != null) {
 				sb.append(":").append(authPass);
 			}
 			sb.append("@");
 		}
-		String hostSrc = host;
-		if(publicSuffix) {
-			hostSrc = getPublicSuffix();
+		if (host != null) {
+			String hostSrc = host;
+			if(publicSuffix) {
+				hostSrc = getPublicSuffix();
+			}
+			if(surt) {
+				hostSrc = URLRegexTransformer.hostToSURT(hostSrc);
+			}
+			sb.append(hostSrc);
 		}
-		if(surt) {
-			hostSrc = URLRegexTransformer.hostToSURT(hostSrc);
-		}
-		sb.append(hostSrc);
 		if(port != DEFAULT_PORT) {
 			sb.append(":").append(port);
 		}
-		if(surt) {
+		if(host != null && surt) {
 			sb.append(")");
 		}
 		boolean hasPath = (path != null) && (path.length() > 0);
@@ -100,7 +107,6 @@ public class HandyURL {
 			sb.append('?').append(query);
 		}
 		if(fragment != null) {
-			sb.append(fragment);
 			sb.append('#').append(fragment);
 		}
 		return sb.toString();

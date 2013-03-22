@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 import org.archive.util.StringFieldExtractor;
 import org.archive.util.StringFieldExtractor.StringTuple;
 
-public class IAURLCanonicalizer implements URLCanonicalizer, CanonicalizerConstants {
+public class IAURLCanonicalizer extends URLCanonicalizer implements CanonicalizerConstants {
 	private CanonicalizeRules rules;
 	public IAURLCanonicalizer(CanonicalizeRules rules) {
 		this.rules = rules;

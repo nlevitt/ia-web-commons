@@ -1,6 +1,6 @@
 package org.archive.url;
 
-public class NonMassagingIAURLCanonicalizer implements URLCanonicalizer {
+public class NonMassagingIAURLCanonicalizer extends URLCanonicalizer {
 	private static final GoogleURLCanonicalizer google = 
 		new GoogleURLCanonicalizer();
 	private static CanonicalizeRules nonMassagingRules = 

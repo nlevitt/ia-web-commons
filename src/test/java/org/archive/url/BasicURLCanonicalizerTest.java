@@ -275,9 +275,7 @@ public class BasicURLCanonicalizerTest extends TestCase {
 	}
 	
 	private void checkCanonicalization(String in, String want) throws URISyntaxException {
-		HandyURL h = URLParser.parse(in);
-		guc.canonicalize(h);
-		String got = h.getURLString();
+		String got = guc.canonicalize(in);
 		assertEquals(want, got);
 	}
 }

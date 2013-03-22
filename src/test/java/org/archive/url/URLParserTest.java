@@ -118,10 +118,30 @@ public class URLParserTest extends TestCase {
 		assertEquals(port, h.getPort());
 		assertEquals(path, h.getPath());
 		assertEquals(query, h.getQuery());
-		assertEquals(fragment, h.getHash());
+		assertEquals(fragment, h.getFragment());
 
 		assertEquals(urlString, h.getURLString());
 		assertEquals(pathQuery, h.getPathQuery());
 	}
 
+	public void testRelative() throws URISyntaxException {
+		checkParse("/server-relative", 
+				null, null, null, null, null, -1, "/server-relative", null, null,
+				"/server-relative", "/server-relative");
+		checkParse("relative", 
+				null, null, null, null, null, -1, "relative", null, null,
+				"relative", "relative");
+		checkParse("//jdoe:****@www.archive.org:8080/index.html?query#foo",
+				null, null, "jdoe", "****", "www.archive.org", 8080, "/index.html", "query", "foo",
+				"//jdoe:****@www.archive.org:8080/index.html?query#foo", "/index.html?query");
+		checkParse("/index.html?query#foo",
+				null, null, null, null, null, -1, "/index.html", "query", "foo",
+				"/index.html?query#foo", "/index.html?query");
+		checkParse("index.html?query#foo",
+				null, null, null, null, null, -1, "index.html", "query", "foo",
+				"index.html?query#foo", "index.html?query");
+		checkParse("funky.path.not.hostname.com///slashes//index.html?query#foo",
+				null, null, null, null, null, -1, "funky.path.not.hostname.com///slashes//index.html", "query", "foo",
+				"funky.path.not.hostname.com///slashes//index.html?query#foo", "funky.path.not.hostname.com///slashes//index.html?query");
+	}
 }
