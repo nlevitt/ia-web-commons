@@ -54,6 +54,12 @@ public class URLParserTest extends TestCase {
 		checkParse("http://www.archive.org/", 
 				"http", null, null, "www.archive.org", -1, "/", null, null,
 				"http://www.archive.org/", "/");
+		checkParse("http://www.archive.org:/", 
+				"http", null, null, "www.archive.org", -1, "/", null, null,
+				"http://www.archive.org/", "/");
+		checkParse("http://www.archive.org:80/", 
+				"http", null, null, "www.archive.org", 80, "/", null, null,
+				"http://www.archive.org:80/", "/");
 		checkParse("http://www.archive.org", 
 				"http", null, null, "www.archive.org", -1, "", null, null,
 				"http://www.archive.org", "");
@@ -75,13 +81,10 @@ public class URLParserTest extends TestCase {
 		checkParse("http://www.archive.org:8080?#foo",
 				"http", null, null, "www.archive.org", 8080, "", "", "foo",
 				"http://www.archive.org:8080?#foo", "?");
+		
 		checkParse("http://bücher.ch:8080?#foo",
 				"http", null, null, "bücher.ch", 8080, "", "", "foo",
 				"http://bücher.ch:8080?#foo", "?");
-
-		checkParse("dns:bücher.ch",
-				"dns", null, null, null, -1, "bücher.ch", null, null,
-				"dns:bücher.ch", "bücher.ch");
 
 		checkParse("http://www.archive.org/?foo?what", 
 				"http", null, null, "www.archive.org", -1, "/", "foo?what", null,
@@ -104,13 +107,33 @@ public class URLParserTest extends TestCase {
 		checkParse(" \n http://:****@www.archive.org:8080/inde\rx.html?query#foo \r\n \t ",
 				"http", "", "****", "www.archive.org", 8080, "/index.html", "query", "foo",
 				"http://:****@www.archive.org:8080/index.html?query#foo", "/index.html?query");
+		
+		checkParse("http://[1234:5555::face:0f:beef:15:f00d:::d00d]/ipv6?mofo",
+				"http", null, null, "[1234:5555::face:0f:beef:15:f00d:::d00d]", -1, "/ipv6", "mofo", null, 
+				"http://[1234:5555::face:0f:beef:15:f00d:::d00d]/ipv6?mofo", "/ipv6?mofo");
+		checkParse("https://[1234:5555::face:0f:beef:15:f00d:::d00d]:8443/ipv6?mofo",
+				"https", null, null, "[1234:5555::face:0f:beef:15:f00d:::d00d]", 8443, "/ipv6", "mofo", null, 
+				"https://[1234:5555::face:0f:beef:15:f00d:::d00d]:8443/ipv6?mofo", "/ipv6?mofo");
+		checkParse("http://jdoe@[1234:5555::face:0f:beef:15:f00d:::d00d]/ipv6?mofo",
+				"http", "jdoe", null, "[1234:5555::face:0f:beef:15:f00d:::d00d]", -1, "/ipv6", "mofo", null, 
+				"http://jdoe@[1234:5555::face:0f:beef:15:f00d:::d00d]/ipv6?mofo", "/ipv6?mofo");
+		checkParse("http://jdoe:****@[1234:5555::face:0f:beef:15:f00d:::d00d]/ipv6?mofo",
+				"http", "jdoe", "****", "[1234:5555::face:0f:beef:15:f00d:::d00d]", -1, "/ipv6", "mofo", null, 
+				"http://jdoe:****@[1234:5555::face:0f:beef:15:f00d:::d00d]/ipv6?mofo", "/ipv6?mofo");
+		checkParse("https://jdoe@[1234:5555::face:0f:beef:15:f00d:::d00d]:8443/ipv6?mofo",
+				"https", "jdoe", null, "[1234:5555::face:0f:beef:15:f00d:::d00d]", 8443, "/ipv6", "mofo", null, 
+				"https://jdoe@[1234:5555::face:0f:beef:15:f00d:::d00d]:8443/ipv6?mofo", "/ipv6?mofo");
+		checkParse("https://jdoe:****@[1234:5555::face:0f:beef:15:f00d:::d00d]:8443/ipv6?mofo",
+				"https", "jdoe", "****", "[1234:5555::face:0f:beef:15:f00d:::d00d]", 8443, "/ipv6", "mofo", null, 
+				"https://jdoe:****@[1234:5555::face:0f:beef:15:f00d:::d00d]:8443/ipv6?mofo", "/ipv6?mofo");
 	}
 
 	private void checkParse(String s, String scheme, String authUser,
 			String authPass, String host, int port, String path,
 			String query, String fragment, String urlString, String pathQuery) throws URISyntaxException {
 		HandyURL h = URLParser.parse(s);
-		System.out.format("Input:(%s)\nHandyURL\t%s\n",s,h.toDebugString());
+		System.out.format("Input:(%s)\nHandyURL\t%s\nURLString(%s)\tAuthority(%s)\tPathQuery(%s)\n",
+						s, h.toDebugString(), h.getURLString(), h.getAuthority(), h.getPathQuery());
 		assertEquals(scheme, h.getScheme());
 		assertEquals(authUser, h.getAuthUser());
 		assertEquals(authPass, h.getAuthPass());
@@ -147,13 +170,37 @@ public class URLParserTest extends TestCase {
 				null, null, null, null, -1, "funky.path.not.hostname.com///slashes//index.html", "query", "foo",
 				"funky.path.not.hostname.com///slashes//index.html?query#foo", "funky.path.not.hostname.com///slashes//index.html?query");
 	}
-	
-	public void testFunky() throws URISyntaxException {
-		checkParse("bitcoin:blahblah?amount=123", 
-				"bitcoin", null, null, null, -1, "blahblah", "amount=123", null, 
-				"bitcoin:blahblah?amount=123", "blahblah?amount=123");
+
+	public void testOtherSchemes() throws URISyntaxException {
+		checkParse("dns:bücher.ch",
+				"dns", null, null, null, -1, "bücher.ch", null, null,
+				"dns:bücher.ch", "bücher.ch");
+		checkParse("file:/tmp/foo.txt",
+				"file", null, null, null, -1, "/tmp/foo.txt", null, null,
+				"file:/tmp/foo.txt", "/tmp/foo.txt");
+		checkParse("file:///tmp/foo.txt",
+				"file", null, null, "", -1, "/tmp/foo.txt", null, null,
+				"file:///tmp/foo.txt", "/tmp/foo.txt");
 		checkParse("urn:uuid:e14814d9-33fe-437b-8c61-012345d74d9a", 
 				"urn", null, null, null, -1, "uuid:e14814d9-33fe-437b-8c61-012345d74d9a", null, null, 
 				"urn:uuid:e14814d9-33fe-437b-8c61-012345d74d9a", "uuid:e14814d9-33fe-437b-8c61-012345d74d9a");
+		checkParse("mailto:username@example.com?subject=Topic",
+				"mailto", null, null, null, -1, "username@example.com", "subject=Topic", null, 
+				"mailto:username@example.com?subject=Topic", "username@example.com?subject=Topic");
+		checkParse("ldap://[2001:db8::7]/c=GB?objectClass?one",
+				"ldap", null, null, "[2001:db8::7]", -1, "/c=GB", "objectClass?one", null, 
+				"ldap://[2001:db8::7]/c=GB?objectClass?one", "/c=GB?objectClass?one");
+		checkParse("news:comp.infosystems.www.serers.unix",
+				"news", null, null, null, -1, "comp.infosystems.www.serers.unix", null, null, 
+				"news:comp.infosystems.www.serers.unix", "comp.infosystems.www.serers.unix");
+		checkParse("tel:+1-816-555-1212",
+				"tel", null, null, null, -1, "+1-816-555-1212", null, null, 
+				"tel:+1-816-555-1212", "+1-816-555-1212");
+		checkParse("telnet://192.0.2.16:80/",
+				"telnet", null, null, "192.0.2.16", 80, "/", null, null, 
+				"telnet://192.0.2.16:80/", "/");
+		checkParse("bitcoin:blahblah?amount=123", 
+				"bitcoin", null, null, null, -1, "blahblah", "amount=123", null, 
+				"bitcoin:blahblah?amount=123", "blahblah?amount=123");
 	}
 }

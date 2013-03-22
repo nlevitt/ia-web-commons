@@ -79,6 +79,20 @@ public class URLParser {
     // 9: #fragment
     // A: fragment
     
+    // see RFC3986
+    final public static Pattern URI_AUTHORITY_REGEX = Pattern.compile(
+    		"^(([^:@]*)(:([^@]*))?@)?(([^:/#?]*)|(\\[[^/#?]*\\]))(:([0-9]+)?)?$");
+    //        12       3 4           56          7               8 9
+    // 1: user:pass@
+    // 2: user
+    // 3: :pass
+    // 4: pass
+    // 5: host
+    // 6: ipv4/reg-name
+    // 7: ipv6
+    // 8: :port
+    // 9: port 
+    
     public static final String STRAY_SPACING = "[\n\r\t\\p{Zl}\\p{Zp}\u0085]+";
     
     /**
@@ -112,14 +126,14 @@ public class URLParser {
 	public final static String WAIS_SCHEME = "wais://";
 	
 	public static final Pattern SCHEME_PATTERN =
-			Pattern.compile("(?s)^([a-zA-Z0-9+.-]+):.*");
+			Pattern.compile("(?s)^([a-zA-Z][a-zA-Z0-9+.-]*):.*");
 	
 	/**
 	 * Pattern for trimming off the same as {@link String#trim()}, and also nbsp
-	 * non-breaking space \u0080
+	 * non-breaking space \u00a0
 	 */
 	public static final Pattern TRIMMING_PATTERN = 
-			Pattern.compile("^[\u0000-\u0020\u0080]*(.*?)[\u0000-\u0020\u0080]*$");
+			Pattern.compile("(?s)^[\u0000-\u0020\u00a0]*(.*?)[\u0000-\u0020\u00a0]*$");
 	
 	public static String trim(String s) {
 		int left = s.length(), right = 0;
@@ -148,9 +162,9 @@ public class URLParser {
 	}
 	
 	/**
-	 * Attempt to find the scheme (http://, https://, etc) from a given URL.
+	 * Attempt to find the scheme (http, https, etc) from a given URL.
 	 * @param url URL String to parse for a scheme.
-	 * @return the scheme, including trailing "://" if known, null otherwise.
+	 * @return the scheme if known, null otherwise.
 	 */
 	public static String urlToScheme(final String url) {
 		Matcher matcher = SCHEME_PATTERN.matcher(url);
@@ -215,56 +229,38 @@ public class URLParser {
         int port = HandyURL.DEFAULT_PORT;
 
         if (uriAuthority != null) {
-        	String userInfo = null;
-        	String colonPort = null;
+            // see RFC3986
+//          final public static Pattern URI_AUTHORITY_REGEX = Pattern.compile(
+//            		"^(([^:@]*)(:([^@]*))?@)?(([^:/#?]*)|(\\[[^/#?]*\\]))(:([0-9]+)?)?$");
+            //        12       3 4           56          7               8 9
+            // 1: user:pass@
+            // 2: user
+            // 3: :pass
+            // 4: pass
+            // 5: host
+            // 6: ipv4/reg-name
+            // 7: ipv6
+            // 8: :port
+            // 9: port 
 
-        	int atIndex = uriAuthority.indexOf('@');
-        	int portColonIndex = uriAuthority.indexOf(':',(atIndex<0)?0:atIndex);
-
-
-        	if(atIndex<0 && portColonIndex<0) {
-        		// most common case: neither userinfo nor port
-        		hostname = uriAuthority;
-        	} else if (atIndex<0 && portColonIndex>-1) {
-        		// next most common: port but no userinfo
-        		hostname = uriAuthority.substring(0,portColonIndex);
-        		colonPort = uriAuthority.substring(portColonIndex);
-        	} else if (atIndex>-1 && portColonIndex<0) {
-        		// uncommon: userinfo, no port
-        		userInfo = uriAuthority.substring(0,atIndex);
-        		hostname = uriAuthority.substring(atIndex+1);
-        	} else {
-        		// uncommon: userinfo, port
-        		userInfo = uriAuthority.substring(0,atIndex);
-        		hostname = uriAuthority.substring(atIndex+1,portColonIndex);
-        		colonPort = uriAuthority.substring(portColonIndex);
+        	Matcher m2 = URI_AUTHORITY_REGEX.matcher(uriAuthority);
+        	if (!m2.matches()) {
+        		throw new URISyntaxException(urlString,
+        				"could not parse authority (" + uriAuthority + ")");
         	}
-        	if(colonPort != null) {
-        		if(colonPort.startsWith(":")) {
-        			try {
-        				port = Integer.parseInt(colonPort.substring(1));
-        			} catch(NumberFormatException e) {
-        				throw new URISyntaxException(urlString, "bad port "
-        						+ colonPort.substring(1));
-        			}
-        		} else {
-        			// uncommon: userinfo, port
-        			userInfo = uriAuthority.substring(0,atIndex+1);
-        			hostname = uriAuthority.substring(atIndex+1,portColonIndex);
-        			colonPort = uriAuthority.substring(portColonIndex);
-        		}
-        	}
-        	if(userInfo != null) {
-        		int passColonIndex = userInfo.indexOf(':');
-        		if(passColonIndex == -1) {
-        			// no password:
-        			userName = userInfo;
-        		} else {
-        			userName = userInfo.substring(0, passColonIndex);
-        			userPass = userInfo.substring(passColonIndex + 1);
+        	hostname = m2.group(5);
+        	userName = m2.group(2);
+        	userPass = m2.group(4);
+        	if (m2.group(9) != null) {
+        		try {
+        			port = Integer.parseInt(m2.group(9));
+        		} catch (NumberFormatException e) {
+        			throw new URISyntaxException(urlString, "could not parse port "
+        					+ m2.group(9) + " - " + e);
         		}
         	}
         }
+        
         return makeOne(uriScheme,userName,userPass,hostname,
         		port,uriPath,uriQuery,uriFragment);
     }
