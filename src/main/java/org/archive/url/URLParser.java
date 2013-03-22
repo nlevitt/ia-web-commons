@@ -86,7 +86,7 @@ public class URLParser {
      * scheme.  If found, we replace them with two only as mozilla does.
      */
     final static Pattern HTTP_SCHEME_SLASHES =
-        Pattern.compile("^(https?://)/+(.*)");
+        Pattern.compile("^(?i)(https?://)/+(.*)");
 
 	/**
 	 * ARC/WARC specific DNS resolution record.
@@ -102,50 +102,50 @@ public class URLParser {
 	public final static String WARCINFO_SCHEME = "warcinfo:";
 	
 	/**
-	 * HTTP
-	 */
-	public final static String HTTP_SCHEME = "http://";
-	/**
-	 * HTTPS
-	 */
-	public final static String HTTPS_SCHEME = "https://";
-	/**
-	 * FTP
-	 */
-	public final static String FTP_SCHEME = "ftp://";
-	/**
-	 * MMS
-	 */
-	public final static String MMS_SCHEME = "mms://";
-	/**
-	 * RTSP
-	 */
-	public final static String RTSP_SCHEME = "rtsp://";
-	
-	/**
 	 * Default scheme to assume if unspecified. No context implied...
 	 */
-	public final static String DEFAULT_SCHEME = HTTP_SCHEME;	
+	public final static String DEFAULT_SCHEME = "http://";	
 	
 	/**
 	 * go brewster
 	 */
 	public final static String WAIS_SCHEME = "wais://";
 	
-	/**
-	 * array of static Strings for all "known" schemes
-	 */
-	public final static String ALL_SCHEMES[] = { 
-		HTTP_SCHEME,
-		HTTPS_SCHEME,
-		FTP_SCHEME,
-		MMS_SCHEME,
-		RTSP_SCHEME,
-		WAIS_SCHEME
-	};
+	public static final Pattern SCHEME_PATTERN =
+			Pattern.compile("^([a-zA-Z0-9+.-]+):.*");
 	
-	public final static Pattern ALL_SCHEMES_PATTERN =
-		Pattern.compile("(?i)^(http|https|ftp|mms|rtsp|wais)://.*");
+	/**
+	 * Pattern for trimming off the same as {@link String#trim()}, and also nbsp
+	 * non-breaking space \u0080
+	 */
+	public static final Pattern TRIMMING_PATTERN = 
+			Pattern.compile("^[\u0000-\u0020\u0080]*(.*?)[\u0000-\u0020\u0080]*$");
+	
+	public static String trim(String s) {
+		int left = s.length(), right = 0;
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if (c > ' ' && c != '\u00a0') {
+				left = i; 
+				break;
+			}
+		}
+		for (int i = s.length() - 1; i >= left; i--) {
+			char c = s.charAt(i);
+			if (c > ' ' && c != '\u00a0') {
+				right = i + 1;
+				break;
+			}
+		}
+
+		if (left >= right) {
+			return "";
+		} else if (left > 0 || right < s.length() - 1) {
+			return s.substring(left, right);
+		} else {
+			return s;
+		}
+	}
 	
 	/**
 	 * Attempt to find the scheme (http://, https://, etc) from a given URL.
@@ -153,31 +153,39 @@ public class URLParser {
 	 * @return the scheme, including trailing "://" if known, null otherwise.
 	 */
 	public static String urlToScheme(final String url) {
-		for(final String scheme : ALL_SCHEMES) {
-			if(url.startsWith(scheme)) {
-				return scheme;
-			}
+		Matcher matcher = SCHEME_PATTERN.matcher(url);
+		if (matcher.matches()) {
+			return matcher.group(1);
+		} else {
+			return null;
 		}
-		return null;
+	}
+	
+	public static boolean hasScheme(String urlString) {
+		return SCHEME_PATTERN.matcher(urlString).matches();
 	}
     
 	public static String addDefaultSchemeIfNeeded(String urlString) {
-		if(urlString == null) {
+		if (urlString == null) {
 			return null;
+		} else if (hasScheme(urlString)) {
+			return urlString;
+		} else {
+			// add http:// if no scheme is present:
+			return DEFAULT_SCHEME + urlString;
 		}
-        // add http:// if no scheme is present:
-        Matcher m2 = ALL_SCHEMES_PATTERN.matcher(urlString);
-        if(m2.matches()) {
-        	return urlString;
-        }
-		return DEFAULT_SCHEME + urlString;
 	}
 	
     public static HandyURL parse(String urlString) throws URISyntaxException {
-
+    	return SELF.parseUrl(urlString);
+    }
+    
+    protected static final URLParser SELF = new URLParser();
+	
+    protected HandyURL parseUrl(String urlString) throws URISyntaxException {
     	// first strip leading or trailing spaces:
     	// TODO: this strips too much - stripping non-printables
-    	urlString = urlString.trim();
+    	urlString = trim(urlString);
     	
     	// then remove leading, trailing, and internal TAB, CR, LF:
     	urlString = urlString.replaceAll(STRAY_SPACING,"");
@@ -265,7 +273,14 @@ public class URLParser {
         		userPass = userInfo.substring(passColonIndex+1);
         	}
         }
-        return new HandyURL(uriScheme,userName,userPass,hostname,
+        return makeOne(uriScheme,userName,userPass,hostname,
         		port,uriPath,uriQuery,uriFragment);
     }
+
+	protected HandyURL makeOne(String uriScheme, String userName,
+			String userPass, String hostname, int port, String uriPath,
+			String uriQuery, String uriFragment) {
+		return new HandyURL(uriScheme,userName,userPass,hostname,
+				port,uriPath,uriQuery,uriFragment);
+	}
 }

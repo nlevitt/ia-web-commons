@@ -6,7 +6,7 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +36,7 @@ public class BasicURLCanonicalizer implements URLCanonicalizer {
 			.compile("^([1-9][0-9]*)(\\.[0-9]+)?(\\.[0-9]+)?(\\.[0-9]+)?$");
 
 	public void canonicalize(HandyURL url) {
-		url.setHash(null);
+		url.setFragment(null);
 		url.setAuthUser(minimalEscape(url.getAuthUser()));
 		url.setAuthPass(minimalEscape(url.getAuthPass()));
 
@@ -70,8 +70,9 @@ public class BasicURLCanonicalizer implements URLCanonicalizer {
 		// now the path:
 
 		String path = unescapeRepeatedly(url.getPath());
-
-		url.setPath(escapeOnce(normalizePath(path)));
+		path = normalizePath(path);
+		path = escapeOnce(path);
+		url.setPath(path);
 	}
 
 	private static final Pattern SINGLE_FORWARDSLASH_PATTERN = Pattern
@@ -83,7 +84,7 @@ public class BasicURLCanonicalizer implements URLCanonicalizer {
 		} else {
 			// -1 gives an empty trailing element if path ends with '/':
 			String[] paths = SINGLE_FORWARDSLASH_PATTERN.split(path, -1);
-			ArrayList<String> keptPaths = new ArrayList<String>();
+			LinkedList<String> keptPaths = new LinkedList<String>();
 			boolean first = true;
 			for (String p : paths) {
 				if (first) {
@@ -96,9 +97,6 @@ public class BasicURLCanonicalizer implements URLCanonicalizer {
 					// pop the last path, if present:
 					if (keptPaths.size() > 0) {
 						keptPaths.remove(keptPaths.size() - 1);
-					} else {
-						// TODO: leave it? let's do for now...
-						keptPaths.add(p);
 					}
 				} else {
 					keptPaths.add(p);

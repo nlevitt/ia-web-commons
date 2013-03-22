@@ -13,7 +13,7 @@ public class HandyURL {
 	private int port;
 	private String path;
 	private String query;
-	private String hash;
+	private String fragment;
 	private String opaque;
 	
 	// cached values:
@@ -28,7 +28,7 @@ public class HandyURL {
 		this.port = DEFAULT_PORT;
 		this.path = null;
 		this.query = null;
-		this.hash = null;
+		this.fragment = null;
 		this.opaque = null;
 	}
 	
@@ -47,7 +47,7 @@ public class HandyURL {
 		this.port = port;
 		this.path = path;
 		this.query = query;
-		this.hash = hash;
+		this.fragment = hash;
 	}
 
 	public String getSURTString(boolean includeScheme) {
@@ -91,7 +91,7 @@ public class HandyURL {
 		if(hasPath) {
 			sb.append(path);
 		} else {
-			if((query != null) || (hash != null)) {
+			if((query != null) || (fragment != null)) {
 				// must have '/' with query or hash:
 				sb.append("/");
 			}
@@ -99,8 +99,8 @@ public class HandyURL {
 		if(query != null) {
 			sb.append(query);
 		}
-		if(hash != null) {
-			sb.append(hash);
+		if(fragment != null) {
+			sb.append(fragment);
 		}
 		return sb.toString();
 		
@@ -128,7 +128,7 @@ public class HandyURL {
 		if(hasPath) {
 			sb.append(path);
 		} else {
-			if((query != null) || (hash != null)) {
+			if((query != null) || (fragment != null)) {
 				// must have '/' with query or hash:
 				sb.append("/");
 			}
@@ -136,8 +136,8 @@ public class HandyURL {
 		if(query != null) {
 			sb.append(query);
 		}
-		if(hash != null) {
-			sb.append(hash);
+		if(fragment != null) {
+			sb.append(fragment);
 		}
 		return sb.toString();
 	}
@@ -147,7 +147,7 @@ public class HandyURL {
 		if(hasPath) {
 			sb.append(path);
 		} else {
-			if((query != null) || (hash != null)) {
+			if((query != null) || (fragment != null)) {
 				// must have '/' with query or hash:
 				sb.append("/");
 			}
@@ -282,15 +282,60 @@ public class HandyURL {
 	}
 	/**
 	 * @return the hash
+	 * @deprecated use {@link #getFragment()}
 	 */
 	public String getHash() {
-		return hash;
+		return fragment;
 	}
 	/**
 	 * @param hash the hash to set
+	 * @deprecated use {@link #setFragment(String)}
 	 */
 	public void setHash(String hash) {
-		this.hash = hash;
+		this.fragment = hash;
+	}
+
+	public String getFragment() {
+		return fragment;
+	}
+	public void setFragment(String fragment) {
+		this.fragment = fragment;
+	}
+
+	/**
+	 * @return authority (userinfo@host:port)
+	 */
+	public String getAuthority() {
+		StringBuilder sb = new StringBuilder();
+		
+		if(authUser != null) {
+			sb.append(authUser);
+			if(authPass != null) {
+				sb.append(":").append(authPass);
+			}
+			sb.append("@");
+		}
+		
+		sb.append(host);
+		
+		if(port != DEFAULT_PORT) {
+			sb.append(":").append(port);
+		}
+		
+		return sb.toString();
+	}
+	
+	public String getUserinfo() {
+		if (authUser != null) {
+			StringBuffer sb = new StringBuffer();
+			sb.append(authUser);
+			if (authPass != null) {
+				sb.append(":").append(authPass);
+			}
+			return sb.toString();
+		} else {
+			return null;
+		}
 	}
 
 	/**
@@ -309,7 +354,7 @@ public class HandyURL {
 
 	public String toDebugString() {
 		return String.format("Scheme(%s) UserName(%s) UserPass(%s) Host(%s) port(%d) Path(%s) Query(%s) Frag(%s)",
-				scheme, authUser, authPass, host, port, path, query, hash);
+				scheme, authUser, authPass, host, port, path, query, fragment);
 	}
 
 }

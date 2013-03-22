@@ -16,8 +16,6 @@ public class URLParserTest extends TestCase {
 		int i2 = l.intValue();
 //		int i = Integer.decode("3279880203");
 		System.err.format("FromNum(%s)\n", InetAddresses.fromInteger(i2).getHostAddress());
-		
-		
 	}
 	
 	public void testAddDefaultSchemeIfNeeded() {
@@ -29,6 +27,24 @@ public class URLParserTest extends TestCase {
 		assertEquals("http://www.fool.com/",URLParser.addDefaultSchemeIfNeeded("www.fool.com/"));
 	}
 
+	public void testTrim() {
+		 assertEquals("blahblah", URLParser.trim("blahblah"));
+		 assertEquals("blahblah", URLParser.trim(" blahblah"));
+		 assertEquals("blahblah", URLParser.trim("  \u00a0     blahblah"));
+		 assertEquals("blahblah", URLParser.trim("  \t     blahblah"));
+		 assertEquals("blahblah", URLParser.trim("  \t  \r   blahblah"));
+		 assertEquals("blahblah", URLParser.trim("  \t \n\u0000 \r   blahblah"));
+		 assertEquals("blahblah", URLParser.trim(" \u0004 \t \n\u0000 \r   blahblah"));
+		 assertEquals("blahblah", URLParser.trim(" \u0004 \t \n\u0000 \r   blahblah "));
+		 assertEquals("blahblah", URLParser.trim(" \u0004 \t \n\u0000 \r   blahblah \u00a0"));
+		 assertEquals("bla h b lah", URLParser.trim(" \u0004 \t \n\u0000 \r   bla h b lah \u00a0"));
+		 assertEquals("bla h\u00a0b lah", URLParser.trim(" \u0004 \t \n\u0000 \r   bla h\u00a0b lah \u00a0"));
+		 assertEquals("bla h\u00a0b lah", URLParser.trim(" \u0004 \t \n\u0000 \r   bla h\u00a0b lah \u00a0 \t \n\u0000 \r "));
+		 assertEquals("", URLParser.trim(""));
+		 assertEquals("", URLParser.trim(" "));
+		 assertEquals("", URLParser.trim(" \u0004 \t \n\u0000 \r  \u00a0 \t \n\u0000 \r "));
+
+	}
 	
 	public void testParse() throws UnsupportedEncodingException, URISyntaxException {
 		System.out.format("O(%s) E(%s)\n","%66",URLDecoder.decode("%66","UTF-8"));

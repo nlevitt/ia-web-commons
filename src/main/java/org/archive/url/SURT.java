@@ -2,11 +2,11 @@ package org.archive.url;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
-import org.apache.commons.httpclient.URIException;
 import org.archive.util.iterator.AbstractPeekableIterator;
 
 public class SURT {
@@ -26,9 +26,8 @@ public class SURT {
 				return tmp;
 			}
 			return tmp + ",";
-		} catch (URIException e) {
+		} catch (URISyntaxException e) {
 			LOG.warning("URI Exception for(" + input + "):" + e.getLocalizedMessage());
-//			e.printStackTrace();
 			return input;
 		}
 	}

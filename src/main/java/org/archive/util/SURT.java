@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.net.URISyntaxException;
 import java.util.regex.Matcher;
 
 import org.apache.commons.httpclient.URIException;
@@ -205,10 +206,10 @@ public class SURT {
         // ensure all typical UURI cleanup (incl. IDN-punycoding) is done
         try {
             u = UsableURIFactory.getInstance(u).toString();
-        } catch (URIException e) {
+        } catch (URISyntaxException e) {
             e.printStackTrace();
             // allow to continue with original string uri
-        }
+		}
         // except: don't let UURI-fixup add a trailing slash
         // if it wasn't already there (presence or absence of
         // such slash has special meaning specifying implied

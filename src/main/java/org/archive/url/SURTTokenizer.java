@@ -19,6 +19,8 @@
  */
 package org.archive.url;
 
+import java.net.URISyntaxException;
+
 import org.apache.commons.httpclient.URIException;
 import org.archive.util.SURT;
 
@@ -52,9 +54,10 @@ public class SURTTokenizer {
 	 * constructor
 	 * 
 	 * @param url String URL
+	 * @throws URISyntaxException 
 	 * @throws URIException 
 	 */
-	public SURTTokenizer(final String url) throws URIException {
+	public SURTTokenizer(final String url) throws URISyntaxException {
 		if(url.startsWith("(")) {
 			remainder = url;
 		} else {
@@ -147,18 +150,20 @@ public class SURTTokenizer {
 	/**
 	 * @param url
 	 * @return String SURT which will match exactly argument url
+	 * @throws URISyntaxException 
 	 * @throws URIException
 	 */
-	public static String exactKey(String url) throws URIException {
+	public static String exactKey(String url) throws URISyntaxException {
 		return getKey(url,false);
 	}
 
 	/**
 	 * @param url
 	 * @return String SURT which will match urls prefixed with the argument url
+	 * @throws URISyntaxException 
 	 * @throws URIException
 	 */
-	public static String prefixKey(String url) throws URIException {
+	public static String prefixKey(String url) throws URISyntaxException {
 		return getKey(url,true);
 	}
     /**
@@ -177,8 +182,8 @@ public class SURTTokenizer {
         }
         return u;
     }
-	private static String getKey(String url, boolean prefix)
-	throws URIException {
+	private static String getKey(String url, boolean prefix) throws URISyntaxException
+	{
 
 		String key = addImpliedHttpIfNecessary(url);
 		UsableURI uuri = UsableURIFactory.getInstance(key);
