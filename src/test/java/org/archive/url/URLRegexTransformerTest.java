@@ -158,7 +158,9 @@ public class URLRegexTransformerTest extends TestCase {
     }
     
     public void testSURT() {
-    	assertEquals("org,archive,www",URLRegexTransformer.hostToSURT("www.archive.org"));
+    	assertEquals("org,archive,www,",URLRegexTransformer.hostToSURT("www.archive.org"));
+    	assertEquals("192.168.99.99",URLRegexTransformer.hostToSURT("192.168.99.99"));
+    	assertEquals("[1234:5555::face:0f:beef:15:f00d:::d00d]",URLRegexTransformer.hostToSURT("[1234:5555::face:0f:beef:15:f00d:::d00d]"));
     }
 
 }
