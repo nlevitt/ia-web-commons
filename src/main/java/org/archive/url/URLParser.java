@@ -189,16 +189,6 @@ public class URLParser {
     	
     	// then remove leading, trailing, and internal TAB, CR, LF:
     	urlString = urlString.replaceAll(STRAY_SPACING,"");
-
-    	// check for non-standard URLs:
-    	if(urlString.startsWith(DNS_SCHEME)
-    			|| urlString.startsWith(FILEDESC_SCHEME)
-    			|| urlString.startsWith(WARCINFO_SCHEME)) {
-    		HandyURL h = new HandyURL();
-    		// TODO: we could set the authority - to allow SURT stuff to work..
-    		h.setOpaque(urlString);
-    		return h;
-    	}
     	
     	// replace leading http:/// with http://
         Matcher m1 = HTTP_SCHEME_SLASHES.matcher(urlString);

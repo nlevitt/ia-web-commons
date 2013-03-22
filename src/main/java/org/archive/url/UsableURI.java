@@ -134,12 +134,6 @@ implements CharSequence, Serializable {
 	}
 
 	@Override
-	public void setOpaque(String opaque) {
-		cachedUrlString = null;
-		super.setOpaque(opaque);
-	}
-
-	@Override
 	public void setPath(String path) {
 		cachedUrlString = null;
 		super.setPath(path);
@@ -163,16 +157,6 @@ implements CharSequence, Serializable {
 		super.setScheme(scheme);
 	}
 	
-	@Override
-	public String getScheme() {
-		// XXX should this go in HandyURL?
-		if (getOpaque() != null && getOpaque().startsWith("dns:")) {
-			return "dns";
-		} else {
-			return super.getScheme();
-		}
-	}
-	
 	 /**
 	  * Return the referenced host in the UURI, if any, also extracting the 
 	  * host of a DNS-lookup URI where necessary. 
@@ -180,10 +164,10 @@ implements CharSequence, Serializable {
 	  * @return the target or topic host of the URI
 	  */
 	public String getReferencedHost() {
-		if (getOpaque() != null && getOpaque().startsWith("dns:")) {
-			return getOpaque().substring(4); 
+		if ("dns".equals(getScheme()) || "whois".equals(getScheme())) {
+			return getPath();
 		} else {
-			return this.getHost();
+			return getHost();
 		}
 	}
 	

@@ -15,9 +15,6 @@ public class IAURLCanonicalizer extends URLCanonicalizer implements Canonicalize
 	}
 
 	public void canonicalize(HandyURL url) {
-		if(url.getOpaque() != null) {
-			return;
-		}
 		if (rules.isSet(SCHEME_SETTINGS, SCHEME_LOWERCASE)) {
 			if (url.getScheme() != null) {
 				url.setScheme(url.getScheme().toLowerCase());

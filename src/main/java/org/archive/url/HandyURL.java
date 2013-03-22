@@ -14,7 +14,6 @@ public class HandyURL {
 	private String path;
 	private String query;
 	private String fragment;
-	private String opaque;
 
 	// cached values:
 	private String cachedPubSuffix;
@@ -29,7 +28,6 @@ public class HandyURL {
 		this.path = null;
 		this.query = null;
 		this.fragment = null;
-		this.opaque = null;
 	}
 
 	public HandyURL(String scheme,
@@ -55,9 +53,6 @@ public class HandyURL {
 	}
 
 	public String getURLString(boolean surt, boolean includeScheme, boolean publicSuffix) {
-		if(opaque != null) {
-			return opaque;
-		}
 		StringBuilder sb = new StringBuilder();
 
 		if(includeScheme) {
@@ -312,20 +307,6 @@ public class HandyURL {
 		} else {
 			return null;
 		}
-	}
-
-	/**
-	 * @return the opaque
-	 */
-	public String getOpaque() {
-		return opaque;
-	}
-
-	/**
-	 * @param opaque the opaque to set
-	 */
-	public void setOpaque(String opaque) {
-		this.opaque = opaque;
 	}
 
 	public String toDebugString() {
