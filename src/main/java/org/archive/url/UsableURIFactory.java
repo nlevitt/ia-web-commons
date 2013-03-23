@@ -31,7 +31,20 @@ import java.net.URISyntaxException;
 public class UsableURIFactory extends URLParser {
 
     private static final UsableURIFactory factory = new UsableURIFactory();
-	private static final URLCanonicalizer canon = new UsableURICanonicalizer();
+    
+	public static UsableURI getInstance(String urlString) throws URISyntaxException {
+		UsableURI uuri = factory.parseUrl(urlString);
+		uuri.setPath(uuri.getPath().replace('\\', '/'));
+		factory.canonicalize(uuri);
+		return factory.validityCheck(uuri);
+	}
+	
+	public static UsableURI getInstance(UsableURI base, String relative) throws URISyntaxException {
+		UsableURI rel = factory.parseUrl(relative, true);
+		return factory.resolve(base, rel);
+	}
+
+	protected final URLCanonicalizer canon = new UsableURICanonicalizer();
 
     @Override
     protected UsableURI parseUrl(String urlString) throws URISyntaxException {
@@ -51,23 +64,23 @@ public class UsableURIFactory extends URLParser {
 				query, fragment);
 	}
     
-	public static UsableURI getInstance(String urlString) throws URISyntaxException {
-		UsableURI uuri = factory.parseUrl(urlString);
-		uuri.setPath(uuri.getPath().replace('\\', '/'));
+	protected void canonicalize(UsableURI uuri) {
 		canon.canonicalize(uuri);
-		return uuri;
 	}
 
-	public static UsableURI getInstance(UsableURI base, String relative) throws URISyntaxException {
-		UsableURI rel = factory.parseUrl(relative, true);
-		return factory.resolve(base, rel);
-	}
-
-	public UsableURI resolve(UsableURI base, UsableURI rel) {
+	public UsableURI resolve(UsableURI base, UsableURI rel) throws URISyntaxException {
 		UsableURI resolved = (UsableURI) super.resolve(base, rel);
 		resolved.setPath(resolved.getPath().replace('\\', '/'));
 		canon.canonicalize(resolved);
-		return resolved;
+		return validityCheck(resolved);
+	}
+
+	protected UsableURI validityCheck(UsableURI uuri) throws URISyntaxException {
+		if (uuri.length() > UsableURI.MAX_URL_LENGTH) {
+			throw new URISyntaxException(uuri.getURLString(), "Created (escaped) uuri > " +
+					UsableURI.MAX_URL_LENGTH);
+		}
+		return uuri;
 	}
 
 	/**

@@ -267,11 +267,12 @@ public class URLParser {
 	 * @param base
 	 * @param rel
 	 * @return new HandyURL of relativeUri resolved relative to baseUri
+	 * @throws URISyntaxException 
 	 * 
 	 * @see <a
 	 *      href="http://tools.ietf.org/html/std66#section-5">http://tools.ietf.org/html/std66#section-5</a>
 	 */
-	public HandyURL resolve(UsableURI base, UsableURI rel) {
+	public HandyURL resolve(UsableURI base, UsableURI rel) throws URISyntaxException {
 		String scheme, authUser, authPass, host, path, query, fragment;
 		int port;
 		if (rel.getScheme() != null) {

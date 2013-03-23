@@ -45,6 +45,11 @@ implements CharSequence, Serializable {
      * The default charset of the protocol.  RFC 2277, 2396
      */
     protected static final String DEFAULT_PROTOCOL_CHARSET = "UTF-8";
+
+    /**
+     * Consider URIs too long for IE as illegal.
+     */
+	public static final int MAX_URL_LENGTH = 2083;
     
     public UsableURI(String uriScheme, String userName, String userPass,
 			String hostname, int port, String uriPath, String uriQuery,
@@ -89,6 +94,7 @@ implements CharSequence, Serializable {
 
 	@Override
 	public int length() {
+		// XXX could sum up length without creating string, but that's asking for bugs...?
 		return getURLString().length();
 	}
 

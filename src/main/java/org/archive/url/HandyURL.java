@@ -109,7 +109,6 @@ public class HandyURL {
 			sb.append('#').append(fragment);
 		}
 		return sb.toString();
-
 	}
 
 	public String getURLString() {
