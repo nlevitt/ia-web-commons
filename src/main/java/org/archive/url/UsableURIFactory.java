@@ -19,7 +19,6 @@
 package org.archive.url;
 
 import java.net.URISyntaxException;
-import java.util.logging.Logger;
 
 /**
  * Factory that returns UsableURIs.
@@ -31,62 +30,6 @@ import java.util.logging.Logger;
  */
 public class UsableURIFactory extends URLParser {
 
-	// XXX can we get rid of these constants?
-	 public static final String SLASHDOTDOTSLASH = "^(/\\.\\./)+";
-	 public static final String SLASH = "/";
-	 public static final String HTTP = "http";
-	 public static final String HTTP_PORT = ":80";
-	 public static final String HTTPS = "https";
-	 public static final String HTTPS_PORT = ":443";
-	 public static final String DOT = ".";
-	 public static final String EMPTY_STRING = "";
-	 public static final String NBSP = "\u00A0";
-	 public static final String SPACE = " ";
-	 public static final String ESCAPED_SPACE = "%20";
-	 public static final String TRAILING_ESCAPED_SPACE = "^(.*)(%20)+$";
-	 public static final String PIPE = "|";
-	 public static final String PIPE_PATTERN = "\\|";
-	 public static final String ESCAPED_PIPE = "%7C";
-	 public static final String CIRCUMFLEX = "^";
-	 public static final String CIRCUMFLEX_PATTERN = "\\^";
-	 public static final String ESCAPED_CIRCUMFLEX = "%5E";
-	 public static final String QUOT = "\"";
-	 public static final String ESCAPED_QUOT = "%22";
-	 public static final String SQUOT = "'";
-	 public static final String ESCAPED_SQUOT = "%27";
-	 public static final String APOSTROPH = "`";
-	 public static final String ESCAPED_APOSTROPH = "%60";
-	 public static final String LSQRBRACKET = "[";
-	 public static final String LSQRBRACKET_PATTERN = "\\[";
-	 public static final String ESCAPED_LSQRBRACKET = "%5B";
-	 public static final String RSQRBRACKET = "]";
-	 public static final String RSQRBRACKET_PATTERN = "\\]";
-	 public static final String ESCAPED_RSQRBRACKET = "%5D";
-	 public static final String LCURBRACKET = "{";
-	 public static final String LCURBRACKET_PATTERN = "\\{";
-	 public static final String ESCAPED_LCURBRACKET = "%7B";
-	 public static final String RCURBRACKET = "}";
-	 public static final String RCURBRACKET_PATTERN = "\\}";
-	 public static final String ESCAPED_RCURBRACKET = "%7D";
-	 public static final String BACKSLASH = "\\";
-	 public static final String ESCAPED_BACKSLASH = "%5C";
-	 public static final String STRAY_SPACING = "[\n\r\t]+";
-	 public static final String IMPROPERESC_REPLACE = "%25$1";
-	 public static final String IMPROPERESC =
-	     "%((?:[^\\p{XDigit}])|(?:.[^\\p{XDigit}])|(?:\\z))";
-	 public static final String COMMERCIAL_AT = "@";
-	 public static final char PERCENT_SIGN = '%';
-	 public static final char COLON = ':';
-
-    /**
-     * Logging instance.
-     */
-    private static Logger logger =
-        Logger.getLogger(UsableURIFactory.class.getName());
-    
-    /**
-     * The single instance of this factory.
-     */
     private static final UsableURIFactory factory = new UsableURIFactory();
 	private static final BasicURLCanonicalizer basic = 
 			new BasicURLCanonicalizer();
@@ -95,15 +38,20 @@ public class UsableURIFactory extends URLParser {
     protected UsableURI parseUrl(String urlString) throws URISyntaxException {
     	return (UsableURI) super.parseUrl(urlString);
     }
-
+    
     @Override
-    protected UsableURI makeOne(String uriScheme, String userName,
-    		String userPass, String hostname, int port, String uriPath,
-    		String uriQuery, String uriFragment) {
-    	return new UsableURI(uriScheme, userName, userPass, hostname, port, uriPath,
-    			uriQuery, uriFragment);
+    protected UsableURI parseUrl(String urlString, boolean allowRelative)
+    		throws URISyntaxException {
+    	return (UsableURI) super.parseUrl(urlString, allowRelative);
     }
 
+    @Override
+	protected HandyURL makeOne(String scheme, String authUser, String authPass,
+			String host, int port, String path, String query, String fragment) {
+		return new UsableURI(scheme, authUser, authPass, host, port, path,
+				query, fragment);
+	}
+    
 	public static UsableURI getInstance(String urlString) throws URISyntaxException {
 		UsableURI uuri = factory.parseUrl(urlString);
 		uuri.setPath(uuri.getPath().replace('\\', '/'));
@@ -111,8 +59,16 @@ public class UsableURIFactory extends URLParser {
 		return uuri;
 	}
 
-	public static UsableURI getInstance(UsableURI base, String string) throws URISyntaxException {
-		throw new RuntimeException("implement me!");
+	public static UsableURI getInstance(UsableURI base, String relative) throws URISyntaxException {
+		UsableURI rel = factory.parseUrl(relative, true);
+		return factory.resolve(base, rel);
+	}
+
+	public UsableURI resolve(UsableURI base, UsableURI rel) {
+		UsableURI resolved = (UsableURI) super.resolve(base, rel);
+		resolved.setPath(resolved.getPath().replace('\\', '/'));
+		basic.canonicalize(resolved);
+		return resolved;
 	}
 
 	/**

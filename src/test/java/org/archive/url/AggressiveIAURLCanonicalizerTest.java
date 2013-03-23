@@ -15,6 +15,7 @@ public class AggressiveIAURLCanonicalizerTest extends TestCase {
 		check("http://archive.org/index.html?b=b&a=b","http://archive.org/index.html?a=b&b=b");
 		check("http://archive.org/index.html?b=a&b=b&a=b","http://archive.org/index.html?a=b&b=a&b=b");
 		check("http://www34.archive.org/index.html?b=a&b=b&a=b","http://archive.org/index.html?a=b&b=a&b=b");
+		check("www34.archive.org/index.html?b=a&b=b&a=b","http://archive.org/index.html?a=b&b=a&b=b");
 	}
 
 	private static void check(String orig, String want) throws URISyntaxException {

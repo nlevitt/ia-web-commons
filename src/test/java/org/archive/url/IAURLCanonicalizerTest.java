@@ -14,14 +14,10 @@ public class IAURLCanonicalizerTest extends TestCase {
 		compCan(iaC,"https://www.archive.org:443/","https://archive.org/");
 		compCan(iaC,"http://www.archive.org/big/","http://archive.org/big");
 		compCan(iaC,"dns:www.archive.org","dns:www.archive.org");
-
-		//assertEquals("http")
 	}	
 
 	private void compCan(URLCanonicalizer c, String orig, String want) throws URISyntaxException {
-		HandyURL u = URLParser.parse(orig);
-		c.canonicalize(u);
-		String got = u.getURLString();
+		String got = c.canonicalize(orig);
 		assertEquals(want,got);
 	}
 

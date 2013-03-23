@@ -70,7 +70,9 @@ public class BasicURLCanonicalizer extends URLCanonicalizer {
 		// now the path:
 
 		String path = unescapeRepeatedly(url.getPath());
-		path = normalizePath(path);
+		if (url.getHost() != null || path.startsWith("/")) {
+			path = normalizePath(path);
+		}
 		path = escapeOnce(path);
 		url.setPath(path);
 	}
@@ -89,7 +91,6 @@ public class BasicURLCanonicalizer extends URLCanonicalizer {
 			for (String p : paths) {
 				if (first) {
 					first = false;
-					continue;
 				} else if (p.compareTo(".") == 0) {
 					// skip
 					continue;

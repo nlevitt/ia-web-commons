@@ -25,7 +25,7 @@ public class HandyURL {
 		this.authPass = null;
 		this.host = null;
 		this.port = DEFAULT_PORT;
-		this.path = null;
+		this.path = "";
 		this.query = null;
 		this.fragment = null;
 	}
@@ -44,6 +44,9 @@ public class HandyURL {
 		this.host = host;
 		this.port = port;
 		this.path = path;
+		if (this.path == null) {
+			this.path = "";
+		}
 		this.query = query;
 		this.fragment = fragment;
 	}
@@ -222,8 +225,10 @@ public class HandyURL {
 	public void setPort(int port) {
 		this.port = port;
 	}
+	
 	/**
-	 * @return the path
+	 * @return the path, which is the one and only segment guaranteed to never
+	 *         be null (it can be an empty string "" though)
 	 */
 	public String getPath() {
 		return path;
@@ -233,6 +238,9 @@ public class HandyURL {
 	 */
 	public void setPath(String path) {
 		this.path = path;
+		if (this.path == null) {
+			this.path = "";
+		}
 	}
 	/**
 	 * @return the query
@@ -309,4 +317,29 @@ public class HandyURL {
 				scheme, authUser, authPass, host, port, path, query, fragment);
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		 if (obj == this) {
+		     return true;
+		 }
+		 if (!(obj instanceof UsableURI)) {
+		     return false;
+		 }
+		 
+		 UsableURI other = (UsableURI) obj;
+		 
+		 // ordered by guessed likelihood of difference for efficiency
+		 return equals(path, other.getPath())
+				 && equals(query, other.getQuery())
+				 && equals(fragment, other.getFragment())
+				 && equals(host, other.getHost())
+				 && port == other.getPort()
+				 && equals(scheme, other.getScheme())
+				 && equals(authUser, other.getAuthUser())
+				 && equals(authPass, other.getAuthPass());
+	}
+
+	private boolean equals(Object a, Object b) {
+		return (a == null && b == null) || (a != null && a.equals(b));
+	}
 }

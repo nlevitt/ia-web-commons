@@ -20,11 +20,13 @@ public class IAURLCanonicalizer extends URLCanonicalizer implements Canonicalize
 				url.setScheme(url.getScheme().toLowerCase());
 			}
 		}
-		if(rules.isSet(HOST_SETTINGS, HOST_LOWERCASE)) {
-			url.setHost(url.getHost().toLowerCase());
-		}
-		if(rules.isSet(HOST_SETTINGS, HOST_MASSAGE)) {
-			url.setHost(massageHost(url.getHost()));
+		if (url.getHost() != null) {
+			if(rules.isSet(HOST_SETTINGS, HOST_LOWERCASE)) {
+				url.setHost(url.getHost().toLowerCase());
+			}
+			if(rules.isSet(HOST_SETTINGS, HOST_MASSAGE)) {
+				url.setHost(massageHost(url.getHost()));
+			}
 		}
 		if(rules.isSet(AUTH_SETTINGS,AUTH_STRIP_USER)) {
 			url.setAuthUser(null);

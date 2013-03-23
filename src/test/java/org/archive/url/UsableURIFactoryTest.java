@@ -26,8 +26,6 @@ import java.util.TreeMap;
 import junit.framework.TestCase;
 
 import org.apache.commons.lang.SerializationUtils;
-import org.archive.url.UsableURI;
-import org.archive.url.UsableURIFactory;
 
 /**
  * Test UURIFactory for proper UURI creation across variety of
@@ -263,8 +261,7 @@ public class UsableURIFactoryTest extends TestCase {
     }
     
 	public final void testTrimSpaceNBSP() throws URISyntaxException {
-		final String uri = "   http://archive.org/DIR WITH SPACES/" +
-		UsableURIFactory.NBSP + "home.html    " + UsableURIFactory.NBSP + "   ";
+		final String uri = "   http://archive.org/DIR WITH SPACES/\u00a0home.html    \u00a0   ";
 		final String tgtUri =
 			"http://archive.org/DIR%20WITH%20SPACES/%20home.html";
 		UsableURI uuri = UsableURIFactory.getInstance(uri);

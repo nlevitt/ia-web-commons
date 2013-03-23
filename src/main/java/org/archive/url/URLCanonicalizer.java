@@ -6,14 +6,12 @@ public abstract class URLCanonicalizer {
 	public abstract void canonicalize(HandyURL url);
 	
 	/**
-	 * 
-	 * @param urlString
+	 * @param urlString presumed to be absolute
 	 * @return
 	 * @throws URISyntaxException
 	 */
 	public String canonicalize(String urlString) throws URISyntaxException {
-		urlString = URLParser.addDefaultSchemeIfNeeded(urlString);
-		HandyURL handyUrl = URLParser.parse(urlString);
+		HandyURL handyUrl = URLParser.parse(urlString, false);
 		canonicalize(handyUrl);
 		return handyUrl.getURLString();
 	}
