@@ -30,9 +30,9 @@ import com.google.common.net.InetAddresses;
  * BasicURLCanonicalizer expresses non-ascii characters pct-encoded UTF-8.
  */
 public class BasicURLCanonicalizer extends URLCanonicalizer {
-	Pattern OCTAL_IP = Pattern
+	private Pattern OCTAL_IP = Pattern
 			.compile("^(0[0-7]*)(\\.[0-7]+)?(\\.[0-7]+)?(\\.[0-7]+)?$");
-	Pattern DECIMAL_IP = Pattern
+	private Pattern DECIMAL_IP = Pattern
 			.compile("^([1-9][0-9]*)(\\.[0-9]+)?(\\.[0-9]+)?(\\.[0-9]+)?$");
 
 	public void canonicalize(HandyURL url) {
@@ -42,19 +42,10 @@ public class BasicURLCanonicalizer extends URLCanonicalizer {
 
 		url.setQuery(minimalEscape(url.getQuery()));
 		String hostE = unescapeRepeatedly(url.getHost());
+		hostE = URLParser.trim(hostE); // UsableURI wants this and google doesn't object
 		String host = null;
 		if (hostE != null) {
-			try {
-				host = IDN.toASCII(hostE);
-			} catch (IllegalArgumentException e) {
-				if (!e.getMessage().contains(
-						"A prohibited code point was found")) {
-					// TODO: What to do???
-					// throw e;
-				}
-				host = hostE;
-
-			}
+			host = IDN.toASCII(hostE);
 			host = host.replaceAll("^\\.+", "").replaceAll("\\.\\.+", ".")
 					.replaceAll("\\.$", "");
 		}
@@ -67,8 +58,8 @@ public class BasicURLCanonicalizer extends URLCanonicalizer {
 			host = escapeOnce(host.toLowerCase());
 		}
 		url.setHost(host);
-		// now the path:
 
+		// now the path:
 		String path = unescapeRepeatedly(url.getPath());
 		if (url.getHost() != null || path.startsWith("/")) {
 			path = normalizePath(path);
@@ -77,10 +68,21 @@ public class BasicURLCanonicalizer extends URLCanonicalizer {
 		url.setPath(path);
 	}
 
-	private static final Pattern PATH_SEPARATOR_PATTERN = Pattern.compile("/+");
 	public String normalizePath(String path) {
+		return normalizePath(path, true);
+	}
+	
+	private static final Pattern MULTI_SLASH_PATTERN = Pattern.compile("/+");
+	private static final Pattern SINGLE_SLASH_PATTERN = Pattern.compile("/");
+	
+	public String normalizePath(String path, boolean collapseMultipleSlashes) {
+		String[] segments;
 		// -1 gives an empty trailing element if path ends with '/':
-		String[] segments = PATH_SEPARATOR_PATTERN.split(path, -1);
+		if (collapseMultipleSlashes) {
+			segments = MULTI_SLASH_PATTERN.split(path, -1);
+		} else {
+			segments = SINGLE_SLASH_PATTERN.split(path, -1);
+		}
 		LinkedList<String> keptSegments = new LinkedList<String>();
 		for (int i = 0; i < segments.length; i++) {
 			String p = segments[i];

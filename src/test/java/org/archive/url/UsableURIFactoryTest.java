@@ -59,7 +59,7 @@ public class UsableURIFactoryTest extends TestCase {
         int port = uuri.getPort();
         assertTrue("Failed find of port " + uuri, port == 8080);
     }
-    
+
     public final void testRelativeURIWithTwoSlashes() throws URISyntaxException {
         UsableURI base = UsableURIFactory.getInstance("http://www.archive.org");
         UsableURI uuri = UsableURIFactory.getInstance(base, "one//index.html");
@@ -77,17 +77,14 @@ public class UsableURIFactoryTest extends TestCase {
     
     public final void testTrailingEncodedSpace() throws URISyntaxException {
         UsableURI uuri = UsableURIFactory.getInstance("http://www.nps-shoes.co.uk%20");
-        assertTrue("Doesn't strip trailing encoded space 1 " + uuri,
-            uuri.toString().equals("http://www.nps-shoes.co.uk/"));
+		assertEquals("http://www.nps-shoes.co.uk/", uuri.toString());
         uuri = UsableURIFactory.getInstance("http://www.nps-shoes.co.uk%20%20%20");
-        assertTrue("Doesn't strip trailing encoded space 2 " + uuri,
-            uuri.toString().equals("http://www.nps-shoes.co.uk/"));
+		assertEquals("http://www.nps-shoes.co.uk/", uuri.toString());
     }
     
     public final void testPort0080is80() throws URISyntaxException {
-        UsableURI uuri = UsableURIFactory.getInstance("http://archive.org:0080");
-        assertTrue("Doesn't strip leading zeros " + uuri,
-            uuri.toString().equals("http://archive.org/"));
+		UsableURI uuri = UsableURIFactory.getInstance("http://archive.org:0080");
+		assertEquals("http://archive.org/", uuri.toString());
     }
     
 // DISABLING TEST AS PRECURSOR TO ELIMINATION

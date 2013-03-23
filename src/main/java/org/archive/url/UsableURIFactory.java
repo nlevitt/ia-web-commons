@@ -31,8 +31,7 @@ import java.net.URISyntaxException;
 public class UsableURIFactory extends URLParser {
 
     private static final UsableURIFactory factory = new UsableURIFactory();
-	private static final BasicURLCanonicalizer basic = 
-			new BasicURLCanonicalizer();
+	private static final URLCanonicalizer canon = new UsableURICanonicalizer();
 
     @Override
     protected UsableURI parseUrl(String urlString) throws URISyntaxException {
@@ -55,7 +54,7 @@ public class UsableURIFactory extends URLParser {
 	public static UsableURI getInstance(String urlString) throws URISyntaxException {
 		UsableURI uuri = factory.parseUrl(urlString);
 		uuri.setPath(uuri.getPath().replace('\\', '/'));
-		basic.canonicalize(uuri);
+		canon.canonicalize(uuri);
 		return uuri;
 	}
 
@@ -67,7 +66,7 @@ public class UsableURIFactory extends URLParser {
 	public UsableURI resolve(UsableURI base, UsableURI rel) {
 		UsableURI resolved = (UsableURI) super.resolve(base, rel);
 		resolved.setPath(resolved.getPath().replace('\\', '/'));
-		basic.canonicalize(resolved);
+		canon.canonicalize(resolved);
 		return resolved;
 	}
 

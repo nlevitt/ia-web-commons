@@ -30,7 +30,10 @@ public class URLParserTest extends TestCase {
 	public void testTrim() {
 		 assertEquals("blahblah", URLParser.trim("blahblah"));
 		 assertEquals("blahblah", URLParser.trim(" blahblah"));
+		 assertEquals("blahblah", URLParser.trim("blahblah "));
+		 assertEquals("blahblah", URLParser.trim(" blahblah "));
 		 assertEquals("blahblah", URLParser.trim("  \u00a0     blahblah"));
+		 assertEquals("blahblah", URLParser.trim("blahblah  \u00a0     "));
 		 assertEquals("blahblah", URLParser.trim("  \t     blahblah"));
 		 assertEquals("blahblah", URLParser.trim("  \t  \r   blahblah"));
 		 assertEquals("blahblah", URLParser.trim("  \t \n\u0000 \r   blahblah"));

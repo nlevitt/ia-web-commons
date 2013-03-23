@@ -123,13 +123,6 @@ public class URLParser {
 	public static final Pattern SCHEME_PATTERN =
 			Pattern.compile("(?s)^([a-zA-Z][a-zA-Z0-9+.-]*):.*");
 	
-	/**
-	 * Pattern for trimming off the same as {@link String#trim()}, and also nbsp
-	 * non-breaking space \u00a0
-	 */
-	public static final Pattern TRIMMING_PATTERN = 
-			Pattern.compile("(?s)^[\u0000-\u0020\u00a0]*(.*?)[\u0000-\u0020\u00a0]*$");
-	
 	public static String trim(String s) {
 		int left = s.length(), right = 0;
 		for (int i = 0; i < s.length(); i++) {
@@ -149,7 +142,7 @@ public class URLParser {
 
 		if (left >= right) {
 			return "";
-		} else if (left > 0 || right < s.length() - 1) {
+		} else if (left > 0 || right < s.length()) {
 			return s.substring(left, right);
 		} else {
 			return s;
