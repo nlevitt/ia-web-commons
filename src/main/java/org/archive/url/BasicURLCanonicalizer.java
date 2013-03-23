@@ -77,50 +77,37 @@ public class BasicURLCanonicalizer extends URLCanonicalizer {
 		url.setPath(path);
 	}
 
-	private static final Pattern SINGLE_FORWARDSLASH_PATTERN = Pattern
-			.compile("/");
-
+	private static final Pattern PATH_SEPARATOR_PATTERN = Pattern.compile("/+");
 	public String normalizePath(String path) {
-		if (path == null) {
-			path = "/";
-		} else {
-			// -1 gives an empty trailing element if path ends with '/':
-			String[] paths = SINGLE_FORWARDSLASH_PATTERN.split(path, -1);
-			LinkedList<String> keptPaths = new LinkedList<String>();
-			boolean first = true;
-			for (String p : paths) {
-				if (first) {
-					first = false;
-				} else if (p.compareTo(".") == 0) {
-					// skip
-					continue;
-				} else if (p.compareTo("..") == 0) {
-					// pop the last path, if present:
-					if (keptPaths.size() > 0) {
-						keptPaths.remove(keptPaths.size() - 1);
-					}
-				} else {
-					keptPaths.add(p);
+		// -1 gives an empty trailing element if path ends with '/':
+		String[] segments = PATH_SEPARATOR_PATTERN.split(path, -1);
+		LinkedList<String> keptSegments = new LinkedList<String>();
+		for (int i = 0; i < segments.length; i++) {
+			String p = segments[i];
+			if (i == 0 && i != segments.length - 1) {
+			} else if (".".equals(p)) {
+				if (i == segments.length - 1) {
+					// ending of a/. normalizes to a/ 
+					keptSegments.add("");
 				}
-			}
-			int numKept = keptPaths.size();
-			if (numKept == 0) {
-				path = "/";
+			} else if ("..".equals(p)) {
+				// pop the last path, if present:
+				if (keptSegments.size() > 0) {
+					keptSegments.remove(keptSegments.size() - 1);
+				}
+				if (i == segments.length - 1) {
+					// ending of a/b/.. normalizes to a/ 
+					keptSegments.add("");
+				}
 			} else {
-				StringBuilder sb = new StringBuilder();
-				sb.append("/");
-				for (int i = 0; i < numKept - 1; i++) {
-					String p = keptPaths.get(i);
-					if (p.length() > 0) {
-						// this will omit multiple slashes:
-						sb.append(p).append("/");
-					}
-				}
-				sb.append(keptPaths.get(numKept - 1));
-				path = sb.toString();
+				keptSegments.add(p);
 			}
 		}
-		return path;
+		StringBuilder sb = new StringBuilder();
+		for (String segment: keptSegments) {
+			sb.append('/').append(segment);
+		}
+		return sb.toString();
 	}
 
 	public String attemptIPFormats(String host) { // throws URIException {

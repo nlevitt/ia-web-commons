@@ -192,9 +192,21 @@ public class BasicURLCanonicalizerTest extends TestCase {
 		
 	}
 		
-	public void testFoo() {
+	public void xestFoo() {
 		String path = "/a/b/c/";
 		String[] paths = path.split("/",-1);
+		for(String p : paths) {
+			System.out.format("(%s)",p);
+		}
+		System.out.println();
+		paths = path.split("/");
+		for(String p : paths) {
+			System.out.format("(%s)",p);
+		}
+		System.out.println();
+		
+		path = "/a/b/c";
+		paths = path.split("/",-1);
 		for(String p : paths) {
 			System.out.format("(%s)",p);
 		}
@@ -272,6 +284,39 @@ public class BasicURLCanonicalizerTest extends TestCase {
 		checkCanonicalization("http://example.org/\ud83c\udca1", "http://example.org/%F0%9F%82%A1");
 		// make sure character above u+ffff survives unescaping and re-escaping
 		checkCanonicalization("http://example.org/%F0%9F%82%A1", "http://example.org/%F0%9F%82%A1");
+	}
+	
+	public void testNormalizePath() {
+		assertEquals("/a/b/c/", guc.normalizePath("/a/b/c/"));
+		assertEquals("/a/b/c/", guc.normalizePath("/a/b/c/."));
+		assertEquals("/a/b/c/", guc.normalizePath("/a/b/c//."));
+		assertEquals("/a/b/c/", guc.normalizePath("/a/b/c/////."));
+		assertEquals("/a/b/", guc.normalizePath("/a/b/c/.."));
+		assertEquals("/a/c", guc.normalizePath("/a/b/../c"));
+		assertEquals("/a/c/", guc.normalizePath("/a/b/../c/"));
+		assertEquals("/", guc.normalizePath("/../"));
+		assertEquals("/", guc.normalizePath("/.."));
+		assertEquals("/", guc.normalizePath("/./"));
+		assertEquals("/", guc.normalizePath("/."));
+		assertEquals("/", guc.normalizePath("/a/../"));
+		assertEquals("/", guc.normalizePath("/a/.."));
+		assertEquals("/a/", guc.normalizePath("/a/./"));
+		assertEquals("/a/", guc.normalizePath("/a/."));
+		assertEquals("/a/b/c/", guc.normalizePath("//a/b/c/"));
+		assertEquals("/a/b/c/", guc.normalizePath("/a///b//c/."));
+		assertEquals("/a/b/", guc.normalizePath("/a/b/c///.."));
+		assertEquals("/a/c", guc.normalizePath("/a//b/..//c"));
+		assertEquals("/a/c/", guc.normalizePath("/a///b/..//c/"));
+		assertEquals("/", guc.normalizePath("/..///"));
+		assertEquals("/", guc.normalizePath("/.."));
+		assertEquals("/", guc.normalizePath("/.///"));
+		assertEquals("/", guc.normalizePath("//."));
+		assertEquals("/", guc.normalizePath("/a//../"));
+		assertEquals("/", guc.normalizePath("//a/.."));
+		assertEquals("/a/", guc.normalizePath("/a/.///"));
+		assertEquals("/a/", guc.normalizePath("//a//."));
+		assertEquals("/a/.../", guc.normalizePath("//a//.../"));
+		assertEquals("/a/...", guc.normalizePath("//a//..."));
 	}
 	
 	private void checkCanonicalization(String in, String want) throws URISyntaxException {

@@ -63,9 +63,8 @@ public class UsableURIFactoryTest extends TestCase {
     public final void testRelativeURIWithTwoSlashes() throws URISyntaxException {
         UsableURI base = UsableURIFactory.getInstance("http://www.archive.org");
         UsableURI uuri = UsableURIFactory.getInstance(base, "one//index.html");
-        assertTrue("Doesn't do right thing with two slashes " + uuri,
-            uuri.toString().equals(
-                "http://www.archive.org/one//index.html"));
+		assertEquals("Doesn't do right thing with two slashes " + uuri,
+				"http://www.archive.org/one//index.html", uuri.toString());
     }
     
     public final void testSchemelessURI() throws URISyntaxException {
