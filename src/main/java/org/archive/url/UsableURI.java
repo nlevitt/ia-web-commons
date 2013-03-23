@@ -170,7 +170,8 @@ implements CharSequence, Serializable {
 	  * @return the target or topic host of the URI
 	  */
 	public String getReferencedHost() {
-		if ("dns".equals(getScheme()) || "whois".equals(getScheme())) {
+		if (getHost() == null
+				&& ("dns".equals(getScheme()) || "whois".equals(getScheme()))) {
 			return getPath();
 		} else {
 			return getHost();

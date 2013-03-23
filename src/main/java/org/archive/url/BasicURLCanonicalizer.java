@@ -41,10 +41,10 @@ public class BasicURLCanonicalizer extends URLCanonicalizer {
 		url.setAuthPass(minimalEscape(url.getAuthPass()));
 
 		url.setQuery(minimalEscape(url.getQuery()));
-		String hostE = unescapeRepeatedly(url.getHost());
-		hostE = URLParser.trim(hostE); // UsableURI wants this and google doesn't object
 		String host = null;
-		if (hostE != null) {
+		if (url.getHost() != null) {
+			String hostE = unescapeRepeatedly(url.getHost());
+			hostE = URLParser.trim(hostE); // UsableURI wants this and google doesn't object
 			host = IDN.toASCII(hostE);
 			host = host.replaceAll("^\\.+", "").replaceAll("\\.\\.+", ".")
 					.replaceAll("\\.$", "");

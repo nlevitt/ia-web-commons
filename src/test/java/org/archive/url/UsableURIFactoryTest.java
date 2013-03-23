@@ -157,17 +157,17 @@ public class UsableURIFactoryTest extends TestCase {
         assertTrue("Not equal " + uuri.toString(),
                 uuri.toString().equals(tgtUri));     
         uri = "http://archive.org/index%25\u001D.html";
-        tgtUri = "http://archive.org/index%25%1D.html".toLowerCase();
+        tgtUri = "http://archive.org/index%25%1D.html";
         uuri = UsableURIFactory.getInstance(uri);
-        assertEquals("whitespace escaping", tgtUri, uuri.toString());
+        assertEquals(tgtUri, uuri.toString());
         uri = "http://gemini.info.usaid.gov/directory/" +
             "pbResults.cfm?&urlNameLast=Rumplestiltskin";
-        tgtUri = "http://gemini.info.usaid.gov/directory/faxResults.cfm?" +
-            "name=Ebenezer%20+Rumplestiltskin,&location=RRB%20%20%20%205%2E08%2D006";
+        tgtUri = "http://gemini.info.usaid.gov/directory/faxResults.cfm?name=" +
+        		"Ebenezer%20+Rumplestiltskin,&location=RRB%20%20%20%205.08-006";
         uuri = UsableURIFactory.getInstance(UsableURIFactory.getInstance(uri),
             "faxResults.cfm?name=Ebenezer +Rumplestiltskin,&location=" +
             "RRB%20%20%20%205%2E08%2D006");
-        assertEquals("whitespace escaping", tgtUri, uuri.toString());
+        assertEquals(tgtUri, uuri.toString());
     }
     
 //	public final void testFailedGetPath() {
@@ -196,11 +196,19 @@ public class UsableURIFactoryTest extends TestCase {
         assertTrue("Host is wrong " + host, host.equals("ads.nandomedia.com"));
     }
 	
+    // tests indicate firefox (1.0.6) does not encode '%' at all
+    // also true in chrome 25.0.1364.172 2013-03-22
 	public final void testPercentEscaping() throws URISyntaxException {
-		final String uri = "http://archive.org/%a%%%%%.html";
-        // tests indicate firefox (1.0.6) does not encode '%' at all
-        final String tgtUri = "http://archive.org/%a%%%%%.html";
+		String uri = "http://archive.org/%a%%%%%.html";
+        String tgtUri = "http://archive.org/%a%%%%%.html";
 		UsableURI uuri = UsableURIFactory.getInstance(uri);
+		assertEquals("Not equal",tgtUri, uuri.toString());
+
+		uri = "http://archive.org/%a%%%%%.html?%%=%%&=%a%1%2";
+        // tests indicate firefox (1.0.6) does not encode '%' at all
+		// also true in chrome 25.0.1364.172 2013-03-22
+        tgtUri = "http://archive.org/%a%%%%%.html?%%=%%&=%a%1%2";
+		uuri = UsableURIFactory.getInstance(uri);
 		assertEquals("Not equal",tgtUri, uuri.toString());
 	}
     
