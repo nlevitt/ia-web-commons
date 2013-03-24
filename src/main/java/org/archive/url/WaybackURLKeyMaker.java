@@ -2,11 +2,9 @@ package org.archive.url;
 
 import java.net.URISyntaxException;
 
-import org.apache.commons.httpclient.URIException;
-
 public class WaybackURLKeyMaker implements URLKeyMaker {
 //	URLCanonicalizer canonicalizer = new NonMassagingIAURLCanonicalizer();
-	URLCanonicalizer canonicalizer = new DefaultIAURLCanonicalizer();
+	URLCanonicalizer canonicalizer = new AggressiveIAURLCanonicalizer();
 	
 	public URLCanonicalizer getCanonicalizer() {
 		return canonicalizer;

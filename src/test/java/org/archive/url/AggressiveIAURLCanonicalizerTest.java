@@ -19,14 +19,6 @@ public class AggressiveIAURLCanonicalizerTest extends TestCase {
 	}
 
 	private static void check(String orig, String want) throws URISyntaxException {
-		HandyURL u = URLParser.parse(orig);
-		ia.canonicalize(u);
-		String got = u.getURLString();
-		assertEquals(want,got);
-		
-		HandyURL u2 = URLParser.parse(got);
-		ia.canonicalize(u2);
-		String got2 = u2.getURLString();
-		assertEquals("Second passs changed!",got,got2);
+		RulesBasedURLCanonicalizerTest.checkCanonicalization(ia, want, orig);
 	}
 }

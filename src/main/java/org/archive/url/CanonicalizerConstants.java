@@ -6,7 +6,7 @@ public interface CanonicalizerConstants {
 	
 	public static final int HOST_ORIGINAL = 0;
 	public static final int HOST_LOWERCASE = 1;
-	public static final int HOST_MASSAGE = 2;
+	public static final int HOST_REMOVE_WWWN = 2;
 	public static final int HOST_MINIMAL_ESCAPE = 4;
 	public static final int HOST_IDN_TO_ASCII = 8;
 	public static final int HOST_REMOVE_EXTRA_DOTS = 16;

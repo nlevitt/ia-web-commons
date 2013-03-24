@@ -1,10 +1,6 @@
 package org.archive.url;
 
-/**
- * Idea of this canonicalizer is to accomplish roughly the equivalent of
- * {@link UsableURIFactory} fixup plus {@link BasicURLCanonicalizer} fixup.
- */
-public class OrdinaryIAURLCanonicalizer extends BasicURLCanonicalizer {
+public class OrdinaryIAURLCanonicalizer extends UsableURICanonicalizer {
 	
 	@Override
 	protected CanonicalizeRules buildRules() {

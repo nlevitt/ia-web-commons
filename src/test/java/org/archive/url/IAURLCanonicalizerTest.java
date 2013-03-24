@@ -7,7 +7,7 @@ import junit.framework.TestCase;
 public class IAURLCanonicalizerTest extends TestCase {
 
 	public void testFull() throws URISyntaxException {
-		DefaultIAURLCanonicalizer iaC = new DefaultIAURLCanonicalizer();
+		AggressiveIAURLCanonicalizer iaC = new AggressiveIAURLCanonicalizer();
 		compCan(iaC,"http://www.archive.org:80/","http://archive.org/");
 		compCan(iaC,"https://www.archive.org:80/","https://archive.org:80/");
 		compCan(iaC,"http://www.archive.org:443/","http://archive.org:443/");
@@ -17,8 +17,7 @@ public class IAURLCanonicalizerTest extends TestCase {
 	}	
 
 	private void compCan(URLCanonicalizer c, String orig, String want) throws URISyntaxException {
-		String got = c.canonicalize(orig);
-		assertEquals(want,got);
+		RulesBasedURLCanonicalizerTest.checkCanonicalization(c, want, orig);
 	}
 
 	public void testAlphaReorderQuery() {

@@ -1,12 +1,13 @@
 package org.archive.url;
 
-public class AggressiveIAURLCanonicalizer extends BasicURLCanonicalizer {
+public class AggressiveIAURLCanonicalizer extends UsableURICanonicalizer {
 
 	@Override
 	protected CanonicalizeRules buildRules() {
 		CanonicalizeRules rules = super.buildRules();
+
 		rules.addRule(SCHEME_SETTINGS, SCHEME_LOWERCASE);
-		rules.addRule(HOST_SETTINGS, HOST_LOWERCASE | HOST_MASSAGE);
+		rules.addRule(HOST_SETTINGS, HOST_LOWERCASE | HOST_REMOVE_WWWN);
 
 		rules.addRule(PORT_SETTINGS, PORT_STRIP_DEFAULT);
 
