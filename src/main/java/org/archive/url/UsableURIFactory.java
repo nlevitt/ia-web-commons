@@ -44,6 +44,13 @@ public class UsableURIFactory extends URLParser {
 		return factory.resolve(base, rel);
 	}
 
+	/**
+	 * @deprecated ignores charset, always UTF-8
+	 */
+	public static UsableURI getInstance(String urlString, String charset) throws URISyntaxException {
+		return getInstance(urlString);
+	}
+
 	protected final URLCanonicalizer canon = new UsableURICanonicalizer();
 
     @Override
@@ -68,9 +75,69 @@ public class UsableURIFactory extends URLParser {
 		canon.canonicalize(uuri);
 	}
 
+	/**
+	 * Resolves {@code rel} relative to {@code base} according to IETF Standard
+	 * 66 (RFC 3986). 
+	 * @param base
+	 * @param rel
+	 * @return new HandyURL of rel resolved relative to base
+	 * @throws URISyntaxException 
+	 * 
+	 * @see <a
+	 *      href="http://tools.ietf.org/html/std66#section-5">http://tools.ietf.org/html/std66#section-5</a>
+	 */
 	public UsableURI resolve(UsableURI base, UsableURI rel) throws URISyntaxException {
-		UsableURI resolved = (UsableURI) super.resolve(base, rel);
-		resolved.setPath(resolved.getPath().replace('\\', '/'));
+		String scheme, authUser, authPass, host, path, query, fragment;
+		int port;
+		if (rel.getScheme() != null) {
+			scheme = rel.getScheme();
+			authUser = rel.getAuthUser();
+			authPass = rel.getAuthPass();
+			host = rel.getHost();
+			port = rel.getPort();
+			path = rel.getPath();
+			query = rel.getQuery();
+		} else {
+			if (rel.getHost() != null) {
+				authUser = rel.getAuthUser();
+				authPass = rel.getAuthPass();
+				host = rel.getHost();
+				port = rel.getPort();
+				path = rel.getPath();
+				query = rel.getQuery();
+			} else {
+				if (rel.getPath().equals("")) {
+					path = base.getPath();
+					if (rel.getQuery() != null) {
+						query = rel.getQuery();
+					} else {
+						query = base.getQuery();
+					}
+				} else {
+					if (rel.getPath().startsWith("/")) {
+						path = rel.getPath();
+					} else {
+						int baseLastSlashIndex = base.getPath().lastIndexOf('/');
+						if (baseLastSlashIndex < 0) {
+							path = '/' + rel.getPath();
+						} else {
+							path = base.getPath().substring(0, baseLastSlashIndex + 1) + rel.getPath();
+						}
+					}
+					query = rel.getQuery();
+				}
+				authUser = base.getAuthUser();
+				authPass = base.getAuthPass();
+				host = base.getHost();
+				port = base.getPort();
+			}
+			scheme = base.getScheme(); 
+		}
+		fragment = rel.getFragment();
+		
+		UsableURI resolved = (UsableURI) makeOne(scheme, authUser, authPass,
+				host, port, path, query, fragment);
+		
 		canon.canonicalize(resolved);
 		return validityCheck(resolved);
 	}
@@ -81,13 +148,6 @@ public class UsableURIFactory extends URLParser {
 					UsableURI.MAX_URL_LENGTH);
 		}
 		return uuri;
-	}
-
-	/**
-	 * @deprecated ignores charset, always UTF-8
-	 */
-	public static UsableURI getInstance(String urlString, String charset) throws URISyntaxException {
-		return getInstance(urlString);
 	}
 
 }

@@ -102,27 +102,10 @@ public class URLParser {
     final static Pattern HTTP_SCHEME_SLASHES =
         Pattern.compile("^(?i)(https?://)/+(.*)");
 
-	/**
-	 * ARC/WARC specific DNS resolution record.
-	 */
-	public final static String DNS_SCHEME = "dns:";
-	/**
-	 * ARC header record.
-	 */
-	public final static String FILEDESC_SCHEME = "filedesc:";
-	/**
-	 * WARC header record.
-	 */
-	public final static String WARCINFO_SCHEME = "warcinfo:";
-	
-	/**
-	 * go brewster
-	 */
-	public final static String WAIS_SCHEME = "wais://";
-	
 	public static final Pattern SCHEME_PATTERN =
 			Pattern.compile("(?s)^([a-zA-Z][a-zA-Z0-9+.-]*):.*");
 	
+	// XXX this belongs in a general util class probably
 	public static String trim(String s) {
 		int left = s.length(), right = 0;
 		for (int i = 0; i < s.length(); i++) {
@@ -257,71 +240,4 @@ public class URLParser {
 				query, fragment);
 	}
 
-	/**
-	 * Resolves {@code rel} relative to {@code base} according to IETF Standard
-	 * 66 (RFC 3986). The code here follows as exactly as possible the
-	 * pseudocode from the standard, except that it does not remove dot segments
-	 * from the resulting path. The result should be run through a canonicalizer
-	 * to do that.
-	 * 
-	 * @param base
-	 * @param rel
-	 * @return new HandyURL of relativeUri resolved relative to baseUri
-	 * @throws URISyntaxException 
-	 * 
-	 * @see <a
-	 *      href="http://tools.ietf.org/html/std66#section-5">http://tools.ietf.org/html/std66#section-5</a>
-	 */
-	public HandyURL resolve(UsableURI base, UsableURI rel) throws URISyntaxException {
-		String scheme, authUser, authPass, host, path, query, fragment;
-		int port;
-		if (rel.getScheme() != null) {
-			scheme = rel.getScheme();
-			authUser = rel.getAuthUser();
-			authPass = rel.getAuthPass();
-			host = rel.getHost();
-			port = rel.getPort();
-			path = rel.getPath();
-			query = rel.getQuery();
-		} else {
-			if (rel.getHost() != null) {
-				authUser = rel.getAuthUser();
-				authPass = rel.getAuthPass();
-				host = rel.getHost();
-				port = rel.getPort();
-				path = rel.getPath();
-				query = rel.getQuery();
-			} else {
-				if (rel.getPath().equals("")) {
-					path = base.getPath();
-					if (rel.getQuery() != null) {
-						query = rel.getQuery();
-					} else {
-						query = base.getQuery();
-					}
-				} else {
-					if (rel.getPath().startsWith("/")) {
-						path = rel.getPath();
-					} else {
-						int baseLastSlashIndex = base.getPath().lastIndexOf('/');
-						if (baseLastSlashIndex < 0) {
-							path = '/' + rel.getPath();
-						} else {
-							path = base.getPath().substring(0, baseLastSlashIndex + 1) + rel.getPath();
-						}
-					}
-					query = rel.getQuery();
-				}
-				authUser = base.getAuthUser();
-				authPass = base.getAuthPass();
-				host = base.getHost();
-				port = base.getPort();
-			}
-			scheme = base.getScheme(); 
-		}
-		fragment = rel.getFragment();
-		
-		return makeOne(scheme, authUser, authPass, host, port, path, query,
-				fragment);
-	}
 }

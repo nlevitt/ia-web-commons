@@ -205,9 +205,13 @@ public class UsableURIFactoryTest extends TestCase {
 		assertEquals("Not equal",tgtUri, uuri.toString());
 
 		uri = "http://archive.org/%a%%%%%.html?%%=%%&=%a%1%2";
-        // tests indicate firefox (1.0.6) does not encode '%' at all
-		// also true in chrome 25.0.1364.172 2013-03-22
         tgtUri = "http://archive.org/%a%%%%%.html?%%=%%&=%a%1%2";
+		uuri = UsableURIFactory.getInstance(uri);
+		assertEquals("Not equal",tgtUri, uuri.toString());
+
+		// "%25" in the input however should not be decoded to "%"
+		uri = "http://archive.org/%a%%25%%%25.html?%%=%%25&=%a%1g%25%2";
+		tgtUri = "http://archive.org/%a%%25%%%25.html?%%=%%25&=%a%1g%25%2";
 		uuri = UsableURIFactory.getInstance(uri);
 		assertEquals("Not equal",tgtUri, uuri.toString());
 	}
@@ -266,11 +270,9 @@ public class UsableURIFactoryTest extends TestCase {
     
 	public final void testTrimSpaceNBSP() throws URISyntaxException {
 		final String uri = "   http://archive.org/DIR WITH SPACES/\u00a0home.html    \u00a0   ";
-		final String tgtUri =
-			"http://archive.org/DIR%20WITH%20SPACES/%20home.html";
+		final String tgtUri = "http://archive.org/DIR%20WITH%20SPACES/%20home.html";
 		UsableURI uuri = UsableURIFactory.getInstance(uri);
-		assertTrue("Not equal " + uuri.toString(),
-				uuri.toString().equals(tgtUri));
+		assertEquals(tgtUri, uuri.toString());
 	}
 	
 	/**

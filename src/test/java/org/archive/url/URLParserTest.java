@@ -269,5 +269,8 @@ public class URLParserTest extends TestCase {
 		checkParse("bitcoin:blahblah?amount=123", true, 
 				"bitcoin", null, null, null, -1, "blahblah", "amount=123", null, 
 				"bitcoin:blahblah?amount=123", "blahblah?amount=123");
+		checkParse("filedesc://261-20060128163659-00005-crawling006.archive.org.arc", true, 
+				"filedesc", null, null, "261-20060128163659-00005-crawling006.archive.org.arc", -1, "", null, null, 
+				"filedesc://261-20060128163659-00005-crawling006.archive.org.arc", "");
 	}
 }
