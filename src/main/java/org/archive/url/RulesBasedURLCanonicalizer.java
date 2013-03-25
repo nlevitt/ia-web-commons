@@ -51,6 +51,22 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 	 * behavior.
 	 */
 	private static final String ESCAPING_DONT_TOUCH_CHARS = ":/?#[]@!$&'()*+,;=%";
+	
+	/*
+	 * The reserved characters should of course not be escaped, and the
+	 * unreserved characters A-Za-z0-9-._~ should not be escaped. Bytes 0x00 to
+	 * 0x20 (space) should be escaped as should 0x7F (delete), and everything >=
+	 * 0x80. There's some ambiguity about the other ascii characters. The
+	 * following characters we escape based on established UURI behavior or
+	 * browser behavior.
+	 */
+	private static final String EXTRA_ESCAPE_CHARS = "{}<>\"^`";
+
+	/*
+	 * Browsers, e.g. chrome (Mar 24 2013), do not escape some of these when
+	 * they appear in the query part of the url. The following are the extra characters that should be escaped when in the query, a subset of EXTRA_ESCAPE_CHARS. 
+	 */
+	private static final String EXTRA_QUERY_ESCAPE_CHARS = "<>\"";
 
 	private final CanonicalizeRules rules = buildRules();
 	
@@ -83,7 +99,8 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 				// we have a query... what to do with it?
 
 				if (rules.isSet(QUERY_SETTINGS, QUERY_MINIMAL_ESCAPE)) {
-					query = escape(unescape(query));
+					query = unescape(query);
+					query = escape(query, EXTRA_QUERY_ESCAPE_CHARS);
 				}
 				if (rules.isSet(QUERY_SETTINGS, QUERY_STRIP_SESSION_ID)) {
 					query = URLRegexTransformer.stripQuerySessionID(query);
@@ -299,6 +316,10 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 	}
 
 	public String escape(String input) {
+		return escape(input, EXTRA_ESCAPE_CHARS);
+	}
+	
+	public String escape(String input, String extraEscapeChars) {
 		if (input == null) {
 			return null;
 		}
@@ -308,15 +329,7 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 
 		for (int i = 0; i < utf8bytes.length; i++) {
 			int b = utf8bytes[i] & 0xff;
-			/*
-			 * Google says "percent-escape all characters in the URL which are
-			 * <= ASCII 32, >= 127, "#", or "%". The escapes should use
-			 * uppercase hex characters". However, '#' is a reserved character,
-			 * so we shouldn't touch it. And it turns out that browsers don't
-			 * encode '%', and UURI has always left '%' alone as well, so we
-			 * don't touch that either.
-			 */
-			if (b <= 0x20 || b >= 0x7f) {
+			if (b <= 0x20 || b >= 0x7f || extraEscapeChars.indexOf(b) >= 0) {
 				if (sb == null) {
 					/*
 					 * everything up to this point has been an ascii character
@@ -325,7 +338,7 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 					sb = new StringBuilder(input.substring(0, i));
 				}
 				sb.append("%");
-				String hex = Integer.toHexString(b).toUpperCase();
+				String hex = Integer.toHexString(b);
 				if (hex.length() == 1) {
 					sb.append('0');
 				}

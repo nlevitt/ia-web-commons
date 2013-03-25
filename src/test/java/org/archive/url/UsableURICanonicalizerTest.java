@@ -101,18 +101,18 @@ public class UsableURICanonicalizerTest extends TestCase {
 	}
 	
 	public void testUnicodeEscaping() throws URISyntaxException {
-		checkCanonicalization("http://example.org/\u2691", "http://example.org/%E2%9A%91");
-		checkCanonicalization("http://example.org/%e2%9a%91", "http://example.org/%E2%9A%91");
-		checkCanonicalization("http://example.org/blah?x=\u268b", "http://example.org/blah?x=%E2%9A%8B");
-		checkCanonicalization("http://example.org/blah?x=%e2%9a%8b", "http://example.org/blah?x=%E2%9A%8B");
-		checkCanonicalization("http://example.org/blah?z\u265fz=z\u4e00z", "http://example.org/blah?z%E2%99%9Fz=z%E4%B8%80z");
-		checkCanonicalization("http://example.org/blah?z%e2%99%9Fz=z%e4%b8%80z", "http://example.org/blah?z%E2%99%9Fz=z%E4%B8%80z");
-		checkCanonicalization("http://example.org/bl\u2691ah?z\u265fz=z\u4e00z", "http://example.org/bl%E2%9A%91ah?z%E2%99%9Fz=z%E4%B8%80z");
-		checkCanonicalization("http://example.org/bl%E2%9A%91ah?z%e2%99%9Fz=z%E4%b8%80z", "http://example.org/bl%E2%9A%91ah?z%E2%99%9Fz=z%E4%B8%80z");
+		checkCanonicalization("http://example.org/\u2691", "http://example.org/%e2%9a%91");
+		checkCanonicalization("http://example.org/%e2%9a%91", "http://example.org/%e2%9a%91");
+		checkCanonicalization("http://example.org/blah?x=\u268b", "http://example.org/blah?x=%e2%9a%8b");
+		checkCanonicalization("http://example.org/blah?x=%e2%9a%8b", "http://example.org/blah?x=%e2%9a%8b");
+		checkCanonicalization("http://example.org/blah?z\u265fz=z\u4e00z", "http://example.org/blah?z%e2%99%9fz=z%e4%b8%80z");
+		checkCanonicalization("http://example.org/blah?z%e2%99%9Fz=z%e4%b8%80z", "http://example.org/blah?z%e2%99%9fz=z%e4%b8%80z");
+		checkCanonicalization("http://example.org/bl\u2691ah?z\u265fz=z\u4e00z", "http://example.org/bl%e2%9a%91ah?z%e2%99%9fz=z%e4%b8%80z");
+		checkCanonicalization("http://example.org/bl%E2%9A%91ah?z%e2%99%9Fz=z%E4%b8%80z", "http://example.org/bl%e2%9a%91ah?z%e2%99%9fz=z%e4%b8%80z");
 		// character above u+ffff represented in java with surrogate pair
-		checkCanonicalization("http://example.org/\ud83c\udca1", "http://example.org/%F0%9F%82%A1");
+		checkCanonicalization("http://example.org/\ud83c\udca1", "http://example.org/%f0%9f%82%a1");
 		// make sure character above u+ffff survives unescaping and re-escaping
-		checkCanonicalization("http://example.org/%F0%9F%82%A1", "http://example.org/%F0%9F%82%A1");
+		checkCanonicalization("http://example.org/%F0%9F%82%A1", "http://example.org/%f0%9f%82%a1");
 	}
 
 	private void checkCanonicalization(String in, String want) throws URISyntaxException {

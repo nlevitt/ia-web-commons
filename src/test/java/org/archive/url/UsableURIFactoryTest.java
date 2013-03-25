@@ -45,8 +45,7 @@ public class UsableURIFactoryTest extends TestCase {
 		// final String ESCAPED_URISTR = "http://archive.org/%20%20%5E%22'%60%5B%5D%7B%7D/a.gif";
 		
 		// this is what we get now 
-		final String ESCAPED_URISTR = "http://archive.org/%C2%A0%20^\"'`[]{}/a.gif";
-		
+		final String ESCAPED_URISTR = "http://archive.org/%c2%a0%20%5e%22'%60[]%7b%7d/a.gif";
 		final String URISTR = "http://archive.org/.././  ^\"'`[]{}\\test/../a.gif\u00a0 ";
 		
 		UsableURI uuri = UsableURIFactory.getInstance(URISTR);
@@ -157,7 +156,7 @@ public class UsableURIFactoryTest extends TestCase {
         assertTrue("Not equal " + uuri.toString(),
                 uuri.toString().equals(tgtUri));     
         uri = "http://archive.org/index%25\u001D.html";
-        tgtUri = "http://archive.org/index%25%1D.html";
+        tgtUri = "http://archive.org/index%25%1d.html";
         uuri = UsableURIFactory.getInstance(uri);
         assertEquals(tgtUri, uuri.toString());
         uri = "http://gemini.info.usaid.gov/directory/" +
@@ -249,17 +248,10 @@ public class UsableURIFactoryTest extends TestCase {
         UsableURI uuri =
             noChangeExpected("http://license.joins.com/igor?one={curly}");
         assertEquals(uuri.getQuery(), "one={curly}");
-        assertEquals(UsableURIFactory.
-                getInstance("http://license.joins.com/igor{curly}.html").
-                    toString(),
-            "http://license.joins.com/igor%7Bcurly%7D.html");
-        boolean exception = false;
-        try {
-            UsableURIFactory.getInstance("http://license.{curly}.com/igor.html");
-        } catch (URISyntaxException u) {
-            exception = true;
-        }
-        assertTrue("Did not get exception.", exception);
+        assertEquals("http://license.joins.com/igor%7bcurly%7d.html",
+        		UsableURIFactory.getInstance("http://license.joins.com/igor{curly}.html").toString());
+        assertEquals("http://license.%7bcurly%7d.com/igor.html",
+        		UsableURIFactory.getInstance("http://license.{curly}.com/igor.html").toString());
     }
     
     protected UsableURI noChangeExpected(final String original) throws URISyntaxException {
@@ -1195,8 +1187,8 @@ public class UsableURIFactoryTest extends TestCase {
     public void testBarsInRelativePath() throws URISyntaxException {
         UsableURI base = UsableURIFactory.getInstance("http://www.example.com");
         String relative = "foo/bar|baz|yorple";
-        base.resolve(relative);
-        UsableURIFactory.getInstance(base,relative); 
+        UsableURI resolved = UsableURIFactory.getInstance(base,relative);
+        assertEquals("http://www.example.com/foo/bar|baz|yorple", resolved);
     }
 
     /**

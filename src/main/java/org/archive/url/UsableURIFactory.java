@@ -76,65 +76,51 @@ public class UsableURIFactory extends URLParser {
 	}
 
 	/**
-	 * Resolves {@code rel} relative to {@code base} according to IETF Standard
-	 * 66 (RFC 3986). 
+	 * Resolves {@code rel} relative to {@code base}. Mostly follows IETF
+	 * Standard 66 (RFC 3986) but differs in that a url with scheme and without
+	 * authority is considered relative.
+	 * 
 	 * @param base
 	 * @param rel
 	 * @return new HandyURL of rel resolved relative to base
-	 * @throws URISyntaxException 
+	 * @throws URISyntaxException
 	 * 
 	 * @see <a
 	 *      href="http://tools.ietf.org/html/std66#section-5">http://tools.ietf.org/html/std66#section-5</a>
 	 */
 	public UsableURI resolve(UsableURI base, UsableURI rel) throws URISyntaxException {
-		String scheme, authUser, authPass, host, path, query, fragment;
-		int port;
-		if (rel.getScheme() != null) {
-			scheme = rel.getScheme();
-			authUser = rel.getAuthUser();
-			authPass = rel.getAuthPass();
-			host = rel.getHost();
-			port = rel.getPort();
-			path = rel.getPath();
-			query = rel.getQuery();
-		} else {
-			if (rel.getHost() != null) {
-				authUser = rel.getAuthUser();
-				authPass = rel.getAuthPass();
-				host = rel.getHost();
-				port = rel.getPort();
-				path = rel.getPath();
-				query = rel.getQuery();
-			} else {
-				if (rel.getPath().equals("")) {
-					path = base.getPath();
-					if (rel.getQuery() != null) {
-						query = rel.getQuery();
-					} else {
-						query = base.getQuery();
-					}
-				} else {
-					if (rel.getPath().startsWith("/")) {
-						path = rel.getPath();
-					} else {
-						int baseLastSlashIndex = base.getPath().lastIndexOf('/');
-						if (baseLastSlashIndex < 0) {
-							path = '/' + rel.getPath();
-						} else {
-							path = base.getPath().substring(0, baseLastSlashIndex + 1) + rel.getPath();
-						}
-					}
-					query = rel.getQuery();
-				}
-				authUser = base.getAuthUser();
-				authPass = base.getAuthPass();
-				host = base.getHost();
-				port = base.getPort();
-			}
-			scheme = base.getScheme(); 
+		String scheme = rel.getScheme();
+		String authUser = rel.getAuthUser();
+		String authPass = rel.getAuthPass();
+		String host = rel.getHost();
+		String query = rel.getQuery();
+		String path = rel.getPath();
+		String fragment = rel.getFragment();
+		int port = rel.getPort();
+	
+		if (scheme == null) {
+			scheme = base.getScheme();
 		}
-		fragment = rel.getFragment();
-		
+		if (host == null) {
+			host = base.getHost();
+			port = base.getPort();
+			authUser = base.getAuthUser();
+			authPass = base.getAuthPass();
+			if (path.equals("")) {
+				path = base.getPath();
+				if (query == null) {
+					query = base.getQuery();
+				}
+			} else if (!path.startsWith("/")) {
+				int baseLastSlashIndex = base.getPath().lastIndexOf('/');
+				if (baseLastSlashIndex < 0) {
+					path = '/' + rel.getPath();
+				} else {
+					path = base.getPath().substring(0, baseLastSlashIndex + 1) + rel.getPath();
+				}
+			}
+		}
+
 		UsableURI resolved = (UsableURI) makeOne(scheme, authUser, authPass,
 				host, port, path, query, fragment);
 		

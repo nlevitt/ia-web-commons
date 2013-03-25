@@ -214,10 +214,6 @@ implements CharSequence, Serializable {
 		return getSURTString(true);
 	}
 
-	public void resolve(String relative) {
-		throw new RuntimeException("implement me!");
-	}
-	
 	@Override
 	public String toString() {
 		return getURLString();

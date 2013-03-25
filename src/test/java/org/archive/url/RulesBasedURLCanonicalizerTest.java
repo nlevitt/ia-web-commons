@@ -275,14 +275,50 @@ public class RulesBasedURLCanonicalizerTest extends TestCase {
 //		assertEquals("/a/...", guc.normalizePath("//a//..."));
 	}
 	
-	public void testEscapeOnce() {
-		StringBuilder sb = new StringBuilder();
-		for (char c = 0; c <= 0x007f; c++) {
-			sb.append(c);
-		}
-		String input = sb.toString();
-		assertEquals("%00%01%02%03%04%05%06%07%08%09%0A%0B%0C%0D%0E%0F%10%11%12%13%14%15%16%17%18%19%1A%1B%1C%1D%1E%1F%20!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~%7F", 
-				guc.escape(input));
+	public void testEscape() {
+		assertEquals("%20", guc.escape(" "));
+		assertEquals("!", guc.escape("!"));
+		assertEquals("%22", guc.escape("\""));
+		assertEquals("#", guc.escape("#"));
+		assertEquals("$", guc.escape("$"));
+		assertEquals("%", guc.escape("%"));
+		assertEquals("&", guc.escape("&"));
+		assertEquals("'", guc.escape("'"));
+		assertEquals("(", guc.escape("("));
+		assertEquals(")", guc.escape(")"));
+		assertEquals("*", guc.escape("*"));
+		assertEquals("+", guc.escape("+"));
+		assertEquals(",", guc.escape(","));
+		assertEquals("-", guc.escape("-"));
+		assertEquals(".", guc.escape("."));
+		assertEquals("/", guc.escape("/"));
+		assertEquals("0", guc.escape("0"));
+		assertEquals("9", guc.escape("9"));
+		assertEquals(":", guc.escape(":"));
+		assertEquals(";", guc.escape(";"));
+		assertEquals("%3c", guc.escape("<"));
+		assertEquals("=", guc.escape("="));
+		assertEquals("%3e", guc.escape(">"));
+		assertEquals("?", guc.escape("?"));
+		assertEquals("@", guc.escape("@"));
+		assertEquals("A", guc.escape("A"));
+		assertEquals("B", guc.escape("B"));
+		assertEquals("Y", guc.escape("Y"));
+		assertEquals("Z", guc.escape("Z"));
+		assertEquals("[", guc.escape("["));
+		assertEquals("\\", guc.escape("\\"));
+		assertEquals("]", guc.escape("]"));
+		assertEquals("%5e", guc.escape("^"));
+		assertEquals("_", guc.escape("_"));
+		assertEquals("%60", guc.escape("`"));
+		assertEquals("a", guc.escape("a"));
+		assertEquals("b", guc.escape("b"));
+		assertEquals("y", guc.escape("y"));
+		assertEquals("z", guc.escape("z"));
+		assertEquals("%7b", guc.escape("{"));
+		assertEquals("|", guc.escape("|"));
+		assertEquals("%7d", guc.escape("}"));
+		assertEquals("~", guc.escape("~"));
 	}
 	
 	static void checkCanonicalization(URLCanonicalizer guc, String expected,
