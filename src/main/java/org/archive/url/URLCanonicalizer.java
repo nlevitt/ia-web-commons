@@ -4,6 +4,7 @@ import java.net.URISyntaxException;
 
 public abstract class URLCanonicalizer {
 	public abstract void canonicalize(HandyURL url);
+	public abstract void canonicalize(HandyURL url, String charset);
 	
 	/**
 	 * @param urlString presumed to be absolute
@@ -15,4 +16,5 @@ public abstract class URLCanonicalizer {
 		canonicalize(handyUrl);
 		return handyUrl.getURLString();
 	}
+
 }

@@ -34,7 +34,6 @@ public class UsableURIFactory extends URLParser {
     
 	public static UsableURI getInstance(String urlString) throws URISyntaxException {
 		UsableURI uuri = factory.parseUrl(urlString);
-		uuri.setPath(uuri.getPath().replace('\\', '/'));
 		factory.canonicalize(uuri);
 		return factory.validityCheck(uuri);
 	}
@@ -48,7 +47,9 @@ public class UsableURIFactory extends URLParser {
 	 * @deprecated ignores charset, always UTF-8
 	 */
 	public static UsableURI getInstance(String urlString, String charset) throws URISyntaxException {
-		return getInstance(urlString);
+		UsableURI uuri = factory.parseUrl(urlString);
+		factory.canonicalize(uuri, charset);
+		return factory.validityCheck(uuri);
 	}
 
 	protected final URLCanonicalizer canon = new UsableURICanonicalizer();
@@ -75,6 +76,10 @@ public class UsableURIFactory extends URLParser {
 		canon.canonicalize(uuri);
 	}
 
+	protected void canonicalize(UsableURI uuri, String charset) {
+		canon.canonicalize(uuri, charset);
+	}
+
 	/**
 	 * Resolves {@code rel} relative to {@code base}. Mostly follows IETF
 	 * Standard 66 (RFC 3986) but differs in that a url with scheme and without
@@ -98,10 +103,8 @@ public class UsableURIFactory extends URLParser {
 		String fragment = rel.getFragment();
 		int port = rel.getPort();
 	
-		if (scheme == null) {
-			scheme = base.getScheme();
-		}
-		if (host == null) {
+		if (host == null
+				&& (scheme == null || scheme.equals(base.getScheme()))) {
 			host = base.getHost();
 			port = base.getPort();
 			authUser = base.getAuthUser();
@@ -119,6 +122,9 @@ public class UsableURIFactory extends URLParser {
 					path = base.getPath().substring(0, baseLastSlashIndex + 1) + rel.getPath();
 				}
 			}
+		}
+		if (scheme == null) {
+			scheme = base.getScheme();
 		}
 
 		UsableURI resolved = (UsableURI) makeOne(scheme, authUser, authPass,

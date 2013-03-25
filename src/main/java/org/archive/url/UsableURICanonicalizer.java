@@ -6,7 +6,7 @@ public class UsableURICanonicalizer extends RulesBasedURLCanonicalizer {
 	protected CanonicalizeRules buildRules() {
 		CanonicalizeRules rules = new CanonicalizeRules();
 
-		rules.setRule(SCHEME_SETTINGS, SCHEME_ORIGINAL);
+		rules.setRule(SCHEME_SETTINGS, SCHEME_LOWERCASE);
 		rules.setRule(AUTH_SETTINGS, AUTH_MINIMAL_ESCAPE);
 		rules.setRule(HOST_SETTINGS, HOST_MINIMAL_ESCAPE | HOST_IDN_TO_ASCII
 				| HOST_REMOVE_EXTRA_DOTS | HOST_CANONICALIZE_IPV4

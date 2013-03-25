@@ -73,12 +73,20 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 	abstract protected CanonicalizeRules buildRules(); 
 
 	public void canonicalize(HandyURL url) {
+		canonicalize(url, Charset.forName("UTF-8"));
+	}
+
+	public void canonicalize(HandyURL url, String charset) {
+		canonicalize(url, Charset.forName(charset));
+	}
+
+	protected void canonicalize(HandyURL url, Charset charset) {
 		applySchemeRules(url);
-		applyAuthRules(url);
-		applyHostRules(url);
+		applyAuthRules(url, charset);
+		applyHostRules(url, charset);
 		applyPortRules(url);
-		applyPathRules(url);
-		applyQueryRules(url);
+		applyPathRules(url, charset);
+		applyQueryRules(url, charset);
 		applyFragmentRules(url);
 	}
 
@@ -88,7 +96,7 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 		}
 	}
 
-	protected void applyQueryRules(HandyURL url) {
+	protected void applyQueryRules(HandyURL url, Charset charset) {
 		String query = url.getQuery();
 		if (query != null) {
 			if (query.equals("")) {
@@ -99,8 +107,8 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 				// we have a query... what to do with it?
 
 				if (rules.isSet(QUERY_SETTINGS, QUERY_MINIMAL_ESCAPE)) {
-					query = unescape(query);
-					query = escape(query, EXTRA_QUERY_ESCAPE_CHARS);
+					query = unescape(query, charset);
+					query = escape(query, charset, EXTRA_QUERY_ESCAPE_CHARS);
 				}
 				if (rules.isSet(QUERY_SETTINGS, QUERY_STRIP_SESSION_ID)) {
 					query = URLRegexTransformer.stripQuerySessionID(query);
@@ -117,7 +125,7 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 		}
 	}
 
-	protected void applyPathRules(HandyURL url) {
+	protected void applyPathRules(HandyURL url, Charset charset) {
 		String path = url.getPath();
 		
 		/*
@@ -129,8 +137,8 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 		 */
 		if (url.getHost() == null && !path.startsWith("/")) {
 			if (rules.isSet(PATH_SETTINGS, PATH_MINIMAL_ESCAPE)) {
-				path = unescape(path);
-				path = escape(path);
+				path = unescape(path, charset);
+				path = escape(path, charset);
 			}
 		} else {
 			if (rules.isSet(PATH_SETTINGS, PATH_BACKSLASH_TO_SLASH)) {
@@ -140,13 +148,13 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 				path = MULTI_SLASH_PATTERN.matcher(path).replaceAll("/");
 			}
 			if (rules.isSet(PATH_SETTINGS, PATH_MINIMAL_ESCAPE)) {
-				path = unescape(path);
+				path = unescape(path, charset);
 			}
 			if (rules.isSet(PATH_SETTINGS, PATH_NORMALIZE_DOT_SEGMENTS)) {
 				path = normalizePath(path);
 			}
 			if (rules.isSet(PATH_SETTINGS, PATH_MINIMAL_ESCAPE)) {
-				path = escape(path);
+				path = escape(path, charset);
 			}
 			if (rules.isSet(PATH_SETTINGS, PATH_LOWERCASE)) {
 				path = path.toLowerCase();
@@ -172,7 +180,7 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 		}
 	}
 
-	protected void applyAuthRules(HandyURL url) {
+	protected void applyAuthRules(HandyURL url, Charset charset) {
 		if (rules.isSet(AUTH_SETTINGS, AUTH_STRIP_AUTH)) {
 			url.setAuthUser(null);
 			url.setAuthPass(null);
@@ -181,16 +189,16 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 			url.setAuthPass(null);
 		}
 		if (rules.isSet(AUTH_SETTINGS, AUTH_MINIMAL_ESCAPE)) {
-			url.setAuthUser(escape(unescape(url.getAuthUser())));
-			url.setAuthPass(escape(unescape(url.getAuthPass())));
+			url.setAuthUser(escape(unescape(url.getAuthUser(), charset), charset));
+			url.setAuthPass(escape(unescape(url.getAuthPass(), charset), charset));
 		}
 	}
 
-	protected void applyHostRules(HandyURL url) {
+	protected void applyHostRules(HandyURL url, Charset charset) {
 		String host = url.getHost();
 		if (host != null) {
 			if (rules.isSet(HOST_SETTINGS, HOST_MINIMAL_ESCAPE)) {
-				host = unescape(host);
+				host = unescape(host, charset);
 			}
 			if (rules.isSet(HOST_SETTINGS, HOST_IDN_TO_ASCII)) {
 				host = IDN.toASCII(host);
@@ -306,29 +314,24 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 		return 0;
 	}
 	
-	protected static Charset _UTF8 = null;
-
-	protected static Charset UTF8() {
-		if (_UTF8 == null) {
-			_UTF8 = Charset.forName("UTF-8");
-		}
-		return _UTF8;
-	}
-
 	public String escape(String input) {
-		return escape(input, EXTRA_ESCAPE_CHARS);
+		return escape(input, Charset.forName("UTF-8"),  EXTRA_ESCAPE_CHARS);
 	}
 	
-	public String escape(String input, String extraEscapeChars) {
+	public String escape(String input, Charset charset) {
+		return escape(input, charset, EXTRA_ESCAPE_CHARS);
+	}
+
+	protected String escape(String input, Charset charset, String extraEscapeChars) {
 		if (input == null) {
 			return null;
 		}
 
-		byte[] utf8bytes = input.getBytes(UTF8());
+		byte[] rawBytes = input.getBytes(charset);
 		StringBuilder sb = null;
 
-		for (int i = 0; i < utf8bytes.length; i++) {
-			int b = utf8bytes[i] & 0xff;
+		for (int i = 0; i < rawBytes.length; i++) {
+			int b = rawBytes[i] & 0xff;
 			if (b <= 0x20 || b >= 0x7f || extraEscapeChars.indexOf(b) >= 0) {
 				if (sb == null) {
 					/*
@@ -356,13 +359,17 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 	}
 
 	public String unescape(String input) {
+		return unescape(input, Charset.forName("UTF-8"));
+	}
+	
+	public String unescape(String input, Charset charset) {
 		if (input == null) {
 			return null;
 		}
 		StringBuilder sb = null;
-		int pctUtf8SeqStart = -1;
+		int escapedSeqStart = -1;
 		ByteBuffer bbuf = null;
-		CharsetDecoder utf8decoder = null;
+		CharsetDecoder decoder = null;
 		int i = 0;
 		int h1, h2;
 		while (i < input.length()) {
@@ -378,11 +385,11 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 							sb.append(input.substring(0, i));
 						}
 					}
-					if (pctUtf8SeqStart < 0 && b < 0x80) { // plain ascii
+					if (escapedSeqStart < 0 && b < 0x80) { // plain ascii
 						sb.append((char) b);
 					} else {
-						if (pctUtf8SeqStart < 0) {
-							pctUtf8SeqStart = i;
+						if (escapedSeqStart < 0) {
+							escapedSeqStart = i;
 							if (bbuf == null) {
 								bbuf = ByteBuffer.allocate((input.length() - i) / 3);
 							}
@@ -393,13 +400,13 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 					continue;
 				}
 			}
-			if (pctUtf8SeqStart >= 0) {
-				if (utf8decoder == null) {
-					utf8decoder = UTF8().newDecoder();
+			if (escapedSeqStart >= 0) {
+				if (decoder == null) {
+					decoder = charset.newDecoder();
 				}
-				appendDecodedPctUtf8(sb, bbuf, input, pctUtf8SeqStart, i,
-						utf8decoder);
-				pctUtf8SeqStart = -1;
+				appendUnescapedPctEscaped(sb, bbuf, input, escapedSeqStart, i,
+						decoder);
+				escapedSeqStart = -1;
 				bbuf.clear();
 			}
 			if (sb != null) {
@@ -407,12 +414,12 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 			}
 			i++;
 		}
-		if (pctUtf8SeqStart >= 0) {
-			if (utf8decoder == null) {
-				utf8decoder = UTF8().newDecoder();
+		if (escapedSeqStart >= 0) {
+			if (decoder == null) {
+				decoder = charset.newDecoder();
 			}
-			appendDecodedPctUtf8(sb, bbuf, input, pctUtf8SeqStart, i,
-					utf8decoder);
+			appendUnescapedPctEscaped(sb, bbuf, input, escapedSeqStart, i,
+					decoder);
 		}
 
 		if (sb != null) {
@@ -423,10 +430,10 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 	}
 
 	/**
-	 * Decodes bytes in bbuf as utf-8 and appends decoded characters to sb. If
-	 * decoding of any portion fails, appends the un-decodable %xx%xx sequence
-	 * extracted from inputStr instead of decoded characters. See "bad unicode"
-	 * tests in GoogleCanonicalizerTest#testDecode(). Variables only make sense
+	 * Decodes bytes in bbuf and appends decoded characters to sb. If decoding
+	 * of any portion fails, appends the un-decodable %xx%xx sequence extracted
+	 * from inputStr instead of decoded characters. See "bad unicode" tests in
+	 * RulesBasedURLCanonicalizerTest#testDecode(). Variables only make sense
 	 * within context of {@link #unescape(String)}.
 	 * 
 	 * @param sb
@@ -439,17 +446,17 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 	 *            start index inclusive within inputStr of %-encoded sequence
 	 * @param seqEnd
 	 *            end index exclusive within inputStr of %-encoded sequence
-	 * @param utf8decoder
+	 * @param decoder
 	 */
-	private void appendDecodedPctUtf8(StringBuilder sb, ByteBuffer bbuf,
+	private void appendUnescapedPctEscaped(StringBuilder sb, ByteBuffer bbuf,
 			String inputStr, int seqStart, int seqEnd,
-			CharsetDecoder utf8decoder) {
+			CharsetDecoder decoder) {
 		// assert bbuf.position() * 3 == seqEnd - seqStart;
-		utf8decoder.reset();
+		decoder.reset();
 		CharBuffer cbuf = CharBuffer.allocate(bbuf.position());
 		bbuf.flip();
 		while (bbuf.position() < bbuf.limit()) {
-			CoderResult coderResult = utf8decoder.decode(bbuf, cbuf, true);
+			CoderResult coderResult = decoder.decode(bbuf, cbuf, true);
 			sb.append(cbuf.flip());
 			if (coderResult.isMalformed()) {
 				// put the malformed %xx%xx into the result un-decoded

@@ -292,7 +292,7 @@ public class UsableURIFactoryTest extends TestCase {
 		final String uri = "http://archive.org/DIR WITH SPACES/home" +
 		    ae + ".html";
 		final String encodedUri =
-			"http://archive.org/DIR%20WITH%20SPACES/home%E6.html";
+			"http://archive.org/DIR%20WITH%20SPACES/home%e6.html";
 		UsableURI uuri = UsableURIFactory.getInstance(uri, "ISO-8859-1");
 		assertEquals("single encoding", encodedUri, uuri.toString());
 		// Dbl-encodes.
@@ -302,7 +302,7 @@ public class UsableURIFactoryTest extends TestCase {
 		// Do default utf-8 test.
 		uuri = UsableURIFactory.getInstance(uri);
 		final String encodedUtf8Uri =
-			"http://archive.org/DIR%20WITH%20SPACES/home%C3%A6.html";
+			"http://archive.org/DIR%20WITH%20SPACES/home%c3%a6.html";
 		assertEquals("Not equal utf8", encodedUtf8Uri, uuri.toString());      
 		// Now dbl-encode.
 		uuri = UsableURIFactory.getInstance(uuri.toString());
@@ -948,7 +948,7 @@ public class UsableURIFactoryTest extends TestCase {
             "http://www.yahoo.com/foo?somechars!@$%^&*()_-+={[}]|\'\";:/?.>,<");
         assertEquals(
             // tests in FF1.5 indicate it only escapes " < > 
-            "http://www.yahoo.com/foo?somechars!@$%^&*()_-+={[}]|\'%22;:/?.%3E,%3C",
+            "http://www.yahoo.com/foo?somechars!@$%^&*()_-+={[}]|\'%22;:/?.%3e,%3c",
             uuri.toString());
     }
     
@@ -960,27 +960,27 @@ public class UsableURIFactoryTest extends TestCase {
      * @throws URISyntaxException
      */
     public void testSameAsNutchURLFilterBasic() throws URISyntaxException {
-        assertEquals(UsableURIFactory.getInstance(" http://foo.com/ ").toString(),
-            "http://foo.com/");
+		assertEquals(UsableURIFactory.getInstance(" http://foo.com/ ")
+				.toString(), "http://foo.com/");
 
-        // check that protocol is lower cased
-        assertEquals(UsableURIFactory.getInstance("HTTP://foo.com/").toString(),
-            "http://foo.com/");
-        
-        // check that host is lower cased
-        assertEquals(UsableURIFactory.
-                getInstance("http://Foo.Com/index.html").toString(),
-            "http://foo.com/index.html");
-        assertEquals(UsableURIFactory.
-                getInstance("http://Foo.Com/index.html").toString(),
-            "http://foo.com/index.html");
+		// check that protocol is lower cased
+		assertEquals("http://foo.com/",
+				UsableURIFactory.getInstance("HTTP://foo.com/").toString());
 
-        // check that port number is normalized
-        assertEquals(UsableURIFactory.
-                getInstance("http://foo.com:80/index.html").toString(),
-            "http://foo.com/index.html");
-        assertEquals(UsableURIFactory.getInstance("http://foo.com:81/").toString(),
-            "http://foo.com:81/");
+		// check that host is lower cased
+		assertEquals("http://foo.com/index.html",
+				UsableURIFactory.getInstance("http://Foo.Com/index.html")
+						.toString());
+		assertEquals("http://foo.com/index.html",
+				UsableURIFactory.getInstance("http://Foo.Com/index.html")
+						.toString());
+
+		// check that port number is normalized
+		assertEquals("http://foo.com/index.html",
+				UsableURIFactory.getInstance("http://foo.com:80/index.html")
+						.toString());
+		assertEquals("http://foo.com:81/",
+				UsableURIFactory.getInstance("http://foo.com:81/").toString());
 
         // check that null path is normalized
         assertEquals(UsableURIFactory.getInstance("http://foo.com").toString(),
