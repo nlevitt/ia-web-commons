@@ -201,7 +201,7 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 				host = unescape(host, charset);
 			}
 			if (rules.isSet(HOST_SETTINGS, HOST_IDN_TO_ASCII)) {
-				host = IDN.toASCII(host);
+				host = IDN.toASCII(host, IDN.ALLOW_UNASSIGNED);
 			}
 			if (rules.isSet(HOST_SETTINGS, HOST_REMOVE_EXTRA_DOTS)) {
 				host = host.replaceAll("^\\.+", "").replaceAll("\\.\\.+", ".").replaceAll("\\.$", "");
