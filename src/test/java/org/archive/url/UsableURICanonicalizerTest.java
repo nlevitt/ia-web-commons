@@ -156,6 +156,13 @@ public class UsableURICanonicalizerTest extends TestCase {
 		checkCanonicalization("http://\u0627\u0631\u062F\u0648.idn.icann.org",  "http://xn--mgbqf7g.idn.icann.org/");
 		checkCanonicalization("http://%D8%A7%D8%B1%D8%AF%D9%88.idn.icann.org",  "http://xn--mgbqf7g.idn.icann.org/");
 	}
+	
+	public void testBackslash() throws URISyntaxException {
+		checkCanonicalization("http://example.com/foo\\bar?baz", "http://example.com/foo/bar?baz");
+		checkCanonicalization("http://example.com/foo%5cbar?baz", "http://example.com/foo%5cbar?baz");
+		checkCanonicalization("http://example.com/foo?bar\\baz", "http://example.com/foo?bar\\baz");
+		checkCanonicalization("http://example.com/foo?bar%5cbaz", "http://example.com/foo?bar%5cbaz");
+	}
 
 	private void checkCanonicalization(String in, String want) throws URISyntaxException {
 		RulesBasedURLCanonicalizerTest.checkCanonicalization(guc, want, in);

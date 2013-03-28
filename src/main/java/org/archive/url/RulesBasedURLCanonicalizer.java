@@ -49,8 +49,12 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 	 * 
 	 * We add '%' to the list to match browser behavior and established UURI
 	 * behavior.
+	 * 
+	 * Also '\' to match browser behavior. '\' in the path is converted to '/'
+	 * before escaping. '\' in the query stays '\'. %5c in the path or query
+	 * stays %5c.
 	 */
-	private static final String ESCAPING_DONT_TOUCH_CHARS = ":/?#[]@!$&'()*+,;=%";
+	private static final String ESCAPING_DONT_TOUCH_CHARS = ":/?#[]@!$&'()*+,;=%\\";
 	
 	/*
 	 * The reserved characters should of course not be escaped, and the
@@ -64,7 +68,9 @@ abstract public class RulesBasedURLCanonicalizer extends URLCanonicalizer implem
 
 	/*
 	 * Browsers, e.g. chrome (Mar 24 2013), do not escape some of these when
-	 * they appear in the query part of the url. The following are the extra characters that should be escaped when in the query, a subset of EXTRA_ESCAPE_CHARS. 
+	 * they appear in the query part of the url. The following are the extra
+	 * characters that should be escaped when in the query, a subset of
+	 * EXTRA_ESCAPE_CHARS.
 	 */
 	private static final String EXTRA_QUERY_ESCAPE_CHARS = "<>\"";
 
