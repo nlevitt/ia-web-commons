@@ -18,6 +18,17 @@ public class AggressiveIAURLCanonicalizerTest extends TestCase {
 		check("www34.archive.org/index.html?b=a&b=b&a=b","http://archive.org/index.html?a=b&b=a&b=b");
 	}
 
+	public void testWaybackSurtCanon() throws URISyntaxException {
+		checkWaybackSurt("dns:example.com", "dns:example.com");
+	}
+	
+	protected void checkWaybackSurt(String orig, String want) throws URISyntaxException {
+		HandyURL handy = URLParser.parse(orig, false);
+		ia.canonicalize(handy);
+		String got = handy.getSURTString(false);
+		assertEquals(want, got);
+	}
+
 	private static void check(String orig, String want) throws URISyntaxException {
 		RulesBasedURLCanonicalizerTest.checkCanonicalization(ia, want, orig);
 	}
