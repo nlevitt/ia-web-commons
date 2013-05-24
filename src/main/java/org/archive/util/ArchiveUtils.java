@@ -307,6 +307,27 @@ public class ArchiveUtils {
     }
     
     /**
+     * A version of getDate which returns the default instead of throwing an exception if parsing fails
+     * 
+     * @param d
+     * @param defaultDate
+     * @return
+     * @throws ParseException
+     */
+    public static Date getDate(String d, Date defaultDate)
+    {
+        if (d == null) {
+        	return defaultDate;
+        }
+        
+    	try {
+    		return getDate(d);
+    	} catch (ParseException pe) {
+    		return defaultDate;
+    	}
+    }
+    
+    /**
      * Parses an ARC-style date.  If passed String is < 12 characters in length,
      * we pad.  At a minimum, String should contain a year (>=4 characters).
      * Parse will also fail if day or month are incompletely specified.  Depends
@@ -549,7 +570,7 @@ public class ArchiveUtils {
         return doubleToString(val, maxFractionDigits, 0);
     }
 
-    private static String doubleToString(double val, int maxFractionDigits, int minFractionDigits) {
+    public static String doubleToString(double val, int maxFractionDigits, int minFractionDigits) {
         // NumberFormat returns U+FFFD REPLACEMENT CHARACTER for NaN which looks
         // like a bug in the UI
         if (Double.isNaN(val)) {
@@ -576,23 +597,29 @@ public class ArchiveUtils {
      */
     public static String formatBytesForDisplay(long amount) {
         double displayAmount = (double) amount;
-        int unitPowerOf1024 = 0; 
+        int unitPowerOf1024 = 0;
 
         if(amount <= 0){
             return "0 B";
         }
-        
-        while(displayAmount>=1024 && unitPowerOf1024 < 4) {
+
+        final String[] units = { " B", " KiB", " MiB", " GiB", " TiB" };
+
+        while (displayAmount >= 1024 && unitPowerOf1024 < units.length - 1) {
             displayAmount = displayAmount / 1024;
             unitPowerOf1024++;
         }
-        
-        final String[] units = { " B", " KiB", " MiB", " GiB", " TiB" };
-        
-        // ensure at least 2 significant digits (#.#) for small displayValues
-        int fractionDigits = (displayAmount < 10) ? 1 : 0; 
+
+        int fractionDigits;
+        if (unitPowerOf1024 == 0 || displayAmount >= 10) {
+            fractionDigits = 0;
+        } else { 
+            // ensure at least 2 significant digits (#.#) for small displayValues
+            fractionDigits = 1;
+        }
+
         return doubleToString(displayAmount, fractionDigits, fractionDigits) 
-                   + units[unitPowerOf1024];
+                + units[unitPowerOf1024];
     }
 
     /**

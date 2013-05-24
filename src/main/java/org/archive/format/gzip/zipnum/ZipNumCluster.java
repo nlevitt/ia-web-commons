@@ -109,7 +109,11 @@ public class ZipNumCluster implements CDXInputSource {
 			clusterRoot = this.summaryFile.substring(0, lastSlash + 1);
 		}
 		
-		return clusterRoot + partId + ".gz";
+		if (!partId.endsWith(".gz")) {
+			partId += ".gz";
+		}
+		
+		return clusterRoot + partId;
 	}
 	
 	public int getNumLines(String[] blocks)
@@ -146,6 +150,38 @@ public class ZipNumCluster implements CDXInputSource {
 		return size;
 	}
 	
+	// Adjust from shorter blocks, if loaded
+	public long getTotalLines(int cdxPerBlock)
+	{
+		if (locationUpdater == null) {
+			return 0;
+		}
+		
+		long numLines = 0;
+		
+		try {
+			numLines = this.getNumLines(summary.getRange("", ""));
+		} catch (IOException e) {
+			LOGGER.warning(e.toString());
+			return 0;
+		}
+		
+		long adjustment = locationUpdater.getTotalAdjustment();
+		numLines -= (locationUpdater.getNumBlocks() - 1);
+		numLines *= cdxPerBlock;
+		numLines += adjustment;
+		return numLines;
+	}
+	
+	public long getLastBlockDiff(String startKey, int startPart, int endPart, int cdxPerBlock)
+	{
+		if (locationUpdater == null) {
+			return 0;
+		}
+		
+		return locationUpdater.computeLastBlockDiff(startKey, startPart, endPart, cdxPerBlock);
+	}
+	
 	public int getNumLines(String start, String end) throws IOException
 	{
 		SeekableLineReader slr = null;
@@ -174,14 +210,13 @@ public class ZipNumCluster implements CDXInputSource {
 				endLine = slr.readLine();
 			}
 			
+			// Get the last line
+			if (endLine == null) {
+				endLine = summary.getLastLine(slr);
+			}
+			
 			if (endLine != null) {
 				endCount = extractLineCount(endLine);
-			} else {
-				//TODO: A bit hacky, try to get last field of last line
-				slr.seek(slr.getSize() - 100);
-				endLine = slr.readLine();
-				int lastSp = endLine.lastIndexOf(' ');
-				endCount = Integer.parseInt(endLine.substring(lastSp + 1));
 			}
 			
 			if (startLine != null) {
@@ -262,11 +297,11 @@ public class ZipNumCluster implements CDXInputSource {
 	{
 		CloseableIterator<String> blocklines = this.getCDXIterator(summaryIterator, params);
 		
-		if (split == 0) {
+		if ((split == 0) && (start != null) && !start.isEmpty()) {
 			blocklines = wrapStartIterator(blocklines, start);
 		}
 		
-		if (split >= (numSplits - 1)) {
+		if ((split >= (numSplits - 1)) && (end != null) && !end.isEmpty()) {
 			blocklines = wrapEndIterator(blocklines, end, false);
 		}
 		
@@ -370,5 +405,13 @@ public class ZipNumCluster implements CDXInputSource {
 
 	public void setLocFile(String locFile) {
 		this.locFile = locFile;
+	}
+
+	public boolean isDisabled() {
+		if (locationUpdater != null) {
+			return locationUpdater.isDisabled;
+		}
+		
+		return false;
 	}
 }
